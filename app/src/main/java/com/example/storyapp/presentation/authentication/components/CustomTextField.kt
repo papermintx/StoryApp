@@ -20,7 +20,7 @@ fun CustomTextField(
     text: String,
     onTextChange: (String) -> Unit,
     isPassword: Boolean = false,
-    validate: (String) -> String = { "" } // Fungsi validasi default
+    validate: (String) -> String = { "" }
 ) {
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -29,12 +29,22 @@ fun CustomTextField(
     Column(modifier = modifier) {
         OutlinedTextField(
             value = text,
+            prefix = {
+                if (isPassword) {
+                    Icon(painter = painterResource(R.drawable.baseline_lock_24), contentDescription = null)
+                }
+                if (label == "Email") {
+                    Icon(painter = painterResource(R.drawable.baseline_email_24), contentDescription = null)
+                }
+                if (label == "Name") {
+                    Icon(painter = painterResource(R.drawable.baseline_person_24), contentDescription = null)
+                }
+            },
             onValueChange = { newValue ->
                 onTextChange(newValue)
                 errorMessage = validate(newValue)
-                isError = errorMessage.isNotEmpty() // Menentukan apakah ada error
+                isError = errorMessage.isNotEmpty()
             },
-            label = { Text(label) },
             isError = isError,
             visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
             modifier = Modifier.fillMaxWidth(),

@@ -3,7 +3,6 @@ package com.example.storyapp.presentation.detail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.storyapp.data.dto.GetDetailStoryResponseDto
 import com.example.storyapp.data.dto.toStory
 import com.example.storyapp.datastore.TokenPreferencesRepository
 import com.example.storyapp.domain.ResultState

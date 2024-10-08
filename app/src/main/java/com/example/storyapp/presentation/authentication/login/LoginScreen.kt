@@ -1,8 +1,11 @@
 package com.example.storyapp.presentation.authentication.login
 
-import android.util.Log
+import android.annotation.SuppressLint
 import android.util.Patterns
 import android.widget.Toast
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,25 +17,27 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.storyapp.R
 import com.example.storyapp.domain.ResultState
 import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.presentation.authentication.components.CustomTextField
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
 import com.example.storyapp.presentation.navigation.NavScreen
+import com.example.storyapp.utils.fonts.MyTypography
 
-
+@SuppressLint("RememberReturnType")
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
@@ -44,7 +49,11 @@ fun LoginScreen(
     val password = remember { mutableStateOf("") }
     val context = LocalContext.current
 
+    val animationVisible = remember { Animatable(0f) }
 
+    LaunchedEffect(Unit) {
+        animationVisible.animateTo(1f, animationSpec = tween(durationMillis = 1090))
+    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -54,30 +63,39 @@ fun LoginScreen(
 
     when (val data = loginState.value) {
         is ResultState.Error -> {
-            DialogError(onDismiss = {
-                         viewModel.resetState()
-            }, message = data.exception)
+            DialogError(onDismiss = { viewModel.resetState() }, message = data.exception)
         }
         ResultState.Idle -> Unit
         ResultState.Loading -> LoadingDialog()
         is ResultState.Success -> {
             navController.navigate(NavScreen.Home.route) {
                 popUpTo(NavScreen.Login.route) { inclusive = true }
-                Log.d("LoginScreen", "Success")
                 viewModel.resetState()
             }
         }
     }
 
-    // UI Layout
+    // UI Layout dengan animasi fade-in
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(25.dp)
+            .graphicsLayer(alpha = animationVisible.value),
         verticalArrangement = Arrangement.Center
     ) {
-        // Input Email
+        Image(painter = painterResource(R.drawable.image_login), contentDescription = null)
+        Text(
+            text = "Ready to share your story?",
+            style = MyTypography.headlineSmall
+        )
+        Text(
+            text = "Please enter your data first",
+            style = MyTypography.bodyLarge
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Email", style = MyTypography.bodyMedium)
         CustomTextField(
             label = "Email",
             text = email.value,
@@ -91,6 +109,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Input Password
+        Text(text = "Password", style = MyTypography.bodyMedium)
         CustomTextField(
             label = "Password",
             text = password.value,
@@ -105,17 +124,20 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tombol Login
         Button(
             onClick = {
                 if (email.value.isNotBlank() && password.value.isNotBlank()) {
-                    viewModel.login(LoginRequest(email.value, password.value))
+                    if (Patterns.EMAIL_ADDRESS.matcher(email.value).matches() && password.value.length >= 8) {
+                        viewModel.login(LoginRequest(email.value, password.value))
+                    } else {
+                        Toast.makeText(context, "Invalid email or password", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 }
 
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text(text = "Sign In")
         }
@@ -127,7 +149,7 @@ fun LoginScreen(
             onClick = {
                 navController.navigate(NavScreen.Register.route)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
             Text(text = "Register")
         }

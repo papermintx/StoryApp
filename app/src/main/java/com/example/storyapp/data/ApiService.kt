@@ -5,7 +5,6 @@ import com.example.storyapp.data.dto.GetDetailStoryResponseDto
 import com.example.storyapp.data.dto.GetStoryResponseDto
 import com.example.storyapp.data.dto.LoginResponseDto
 import com.example.storyapp.data.dto.RegisterResponseDto
-import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.domain.model.RegisterRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody

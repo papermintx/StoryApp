@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.storyapp.presentation.navigation.Navigation
+import com.example.storyapp.ui.theme.StoryAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -24,7 +25,9 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-           Navigation(activity = this)
+           StoryAppTheme {
+               Navigation(activity = this)
+           }
         }
     }
 

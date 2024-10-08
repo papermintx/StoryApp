@@ -1,12 +1,6 @@
 package com.example.storyapp.di
 
 import android.content.Context
-import androidx.activity.ComponentActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.example.storyapp.R
 import com.example.storyapp.datastore.TokenPreferencesRepository
 import com.example.storyapp.domain.usecase.AddStoryUseCase
 import com.example.storyapp.domain.usecase.GetAllStoryUseCase
@@ -14,7 +8,6 @@ import com.example.storyapp.domain.usecase.GetDetailStoryUseCase
 import com.example.storyapp.domain.usecase.LoginUseCase
 import com.example.storyapp.domain.usecase.RegisterUseCase
 import com.example.storyapp.domain.usecase.UseCase
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

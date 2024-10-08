@@ -35,7 +35,12 @@ class LoginViewModel @Inject constructor(
                 Log.d("Login", "Loading")
             }
             .catch { e ->
-                _loginState.value = ResultState.Error("Error: ${e.localizedMessage}")
+                if(e.localizedMessage == "HTTP 401 Unauthorized"){
+                    _loginState.value = ResultState.Error("Incorrect email or password")
+                    Log.d("Login", "Error: Email atau password salah")
+                    return@catch
+                }
+                _loginState.value = ResultState.Error("Something went wrong")
                 Log.d("Login", "Error: ${e.localizedMessage}")
             }
             .collect { responseDto ->
