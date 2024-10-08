@@ -4,5 +4,6 @@ data class UseCase (
     val loginUseCase: LoginUseCase,
     val registerUseCase: RegisterUseCase,
     val addStoryUseCase: AddStoryUseCase,
-    val getAllStoryUseCase: GetAllStoryUseCase
+    val getAllStoryUseCase: GetAllStoryUseCase,
+    val getDetailStoryUseCase: GetDetailStoryUseCase
 )

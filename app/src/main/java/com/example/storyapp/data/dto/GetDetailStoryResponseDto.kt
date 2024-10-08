@@ -1,5 +1,6 @@
 package com.example.storyapp.data.dto
 
+import com.example.storyapp.domain.model.Story
 import com.squareup.moshi.Json
 
 data class GetDetailStoryResponseDto(
@@ -11,10 +12,10 @@ data class GetDetailStoryResponseDto(
 	val message: String,
 
 	@Json(name="story")
-	val story: Story
+	val story: StoryDto
 )
 
-data class Story(
+data class StoryDto(
 
 	@Json(name="photoUrl")
 	val photoUrl: String,
@@ -29,11 +30,21 @@ data class Story(
 	val description: String,
 
 	@Json(name="lon")
-	val lon: Any,
+	val lon: Any?,
 
 	@Json(name="id")
 	val id: String,
 
 	@Json(name="lat")
-	val lat: Any
+	val lat: Any?
+)
+
+fun StoryDto.toStory() = Story(
+	photoUrl = photoUrl,
+	createdAt = createdAt,
+	name = name,
+	description = description,
+	lon = lon as Double?,
+	id = id,
+	lat = lat as Double?
 )

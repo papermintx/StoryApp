@@ -27,11 +27,10 @@ fun SplashScreen(
     viewModel: SplashViewModel = hiltViewModel(),
     navHostController: NavHostController
 ) {
-    val composition2 by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.loading_splash)
-    )
+    val composition2 by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_splash))
     val context = LocalContext.current
     val token by viewModel.tokenNotNull.collectAsState()
+
     LaunchedEffect(Unit) {
         delay(3000)
         if (token?.isNotEmpty() == true) {

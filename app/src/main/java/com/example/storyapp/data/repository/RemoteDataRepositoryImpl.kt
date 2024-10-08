@@ -1,5 +1,9 @@
 package com.example.storyapp.data.repository
 
+import android.content.ContentResolver
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import com.example.storyapp.data.ApiService
 import com.example.storyapp.data.dto.AddStoryResponseDto
 import com.example.storyapp.data.dto.GetDetailStoryResponseDto
@@ -13,9 +17,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
 import javax.inject.Inject
 
 class RemoteDataRepositoryImpl @Inject constructor(
@@ -34,22 +42,18 @@ class RemoteDataRepositoryImpl @Inject constructor(
         }
     }
 
+
+
     override suspend fun addStory(
         token: String,
-        description: String,
-        photo: String,
-        lat: String?,
-        lon: String?
+        description: RequestBody,
+        photo: MultipartBody.Part,
+        lat: RequestBody?,
+        lon: RequestBody?
     ): AddStoryResponseDto {
-        val descriptionBody =  description.toRequestBody("text/plain".toMediaTypeOrNull())
-        val file = File(photo)
-        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-        val photoBody = MultipartBody.Part.createFormData("photo", file.name, requestFile)
-        val latBody = lat?.toRequestBody("text/plain".toMediaTypeOrNull())
-        val lonBody = lon?.toRequestBody("text/plain".toMediaTypeOrNull())
 
         return withContext(Dispatchers.Default){
-            apiService.addStory(token,  descriptionBody, photoBody, latBody, lonBody)
+            apiService.addStory(token,  description, photo, lat, lon)
         }
     }
 

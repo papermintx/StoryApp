@@ -10,9 +10,11 @@ import com.example.storyapp.R
 import com.example.storyapp.datastore.TokenPreferencesRepository
 import com.example.storyapp.domain.usecase.AddStoryUseCase
 import com.example.storyapp.domain.usecase.GetAllStoryUseCase
+import com.example.storyapp.domain.usecase.GetDetailStoryUseCase
 import com.example.storyapp.domain.usecase.LoginUseCase
 import com.example.storyapp.domain.usecase.RegisterUseCase
 import com.example.storyapp.domain.usecase.UseCase
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,13 +33,15 @@ class AppModule {
         loginUseCase: LoginUseCase,
         registerUseCase: RegisterUseCase,
         addStoryUseCase: AddStoryUseCase,
-        getAllStoryUseCase: GetAllStoryUseCase
+        getAllStoryUseCase: GetAllStoryUseCase,
+        getDetailStoryUseCase: GetDetailStoryUseCase
     ): UseCase{
         return UseCase(
             loginUseCase,
             registerUseCase,
             addStoryUseCase,
-            getAllStoryUseCase
+            getAllStoryUseCase,
+            getDetailStoryUseCase
         )
     }
 
@@ -48,5 +52,6 @@ class AppModule {
     ): TokenPreferencesRepository {
         return TokenPreferencesRepository(context)
     }
+
 
 }

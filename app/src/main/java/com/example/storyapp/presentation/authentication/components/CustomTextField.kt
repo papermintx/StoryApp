@@ -1,4 +1,4 @@
-package com.example.storyapp.presentation.components
+package com.example.storyapp.presentation.authentication.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -12,7 +12,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.example.storyapp.R
-import java.lang.Error
 
 @Composable
 fun CustomTextField(

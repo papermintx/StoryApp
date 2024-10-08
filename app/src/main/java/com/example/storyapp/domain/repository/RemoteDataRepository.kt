@@ -7,6 +7,8 @@ import com.example.storyapp.data.dto.LoginResponseDto
 import com.example.storyapp.data.dto.RegisterResponseDto
 import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.domain.model.RegisterRequest
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 
 interface RemoteDataRepository {
 
@@ -17,7 +19,13 @@ interface RemoteDataRepository {
     suspend fun login(loginData: LoginRequest): LoginResponseDto
 
     // Add a story
-    suspend fun addStory(token: String, description: String, photo: String, lat: String?, lon: String?): AddStoryResponseDto
+    suspend fun addStory(
+        token: String,
+        description: RequestBody,
+        photo: MultipartBody.Part,
+        lat: RequestBody?,
+        lon: RequestBody?
+    ): AddStoryResponseDto
 
     // Add a story as a guest
     suspend fun addStoryGuest(description: String, photo: String, lat: String?, lon: String?): AddStoryResponseDto

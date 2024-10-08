@@ -23,18 +23,18 @@ import com.example.storyapp.utils.fonts.MyTypography
 @Composable
 fun StoryItem(
     modifier: Modifier = Modifier,
+    id: String,
     imageUrl: String,
     title: String,
-    content: String
+    content: String,
+    onClick: (String) -> Unit
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .shadow(4.dp, shape = RectangleShape) // Ubah RoundedCornerShape menjadi RectangleShape
             .clickable(
-                onClick = {
-                    // Aksi ketika item diklik
-                },
+                onClick = { onClick(id) }
             ),
         shape = RectangleShape, // Ubah bentuk Card menjadi RectangleShape
 

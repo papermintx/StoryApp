@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.airbnb.lottie.compose.LottieAnimation
@@ -21,7 +22,7 @@ import com.example.storyapp.R
 
 @Composable
 fun LoadingDialog() {
-    Dialog(onDismissRequest = { /* Jangan bisa dismiss saat loading */ }) {
+    Dialog(onDismissRequest = { }) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -31,9 +32,9 @@ fun LoadingDialog() {
                 LottieAnimation(
                     composition = composition,
                     iterations = LottieConstants.IterateForever,
-                    modifier = Modifier.size(150.dp)
+                    modifier = Modifier.size(150.dp),
                 )
-                Text(text = "Loading...", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Loading...", style = MaterialTheme.typography.bodyLarge, color = Color.White)
             }
         }
     }

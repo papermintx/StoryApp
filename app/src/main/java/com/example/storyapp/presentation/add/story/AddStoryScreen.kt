@@ -1,11 +1,13 @@
 package com.example.storyapp.presentation.add.story
-
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -17,28 +19,49 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.storyapp.R
+import com.example.storyapp.domain.ResultState
+import com.example.storyapp.presentation.components.DialogError
+import com.example.storyapp.presentation.components.LoadingDialog
+import com.example.storyapp.presentation.navigation.NavScreen
+
 
 @Composable
-fun AddStoryScreen(modifier: Modifier = Modifier) {
+fun AddStoryScreen(
+    modifier: Modifier = Modifier,
+    navHostController: NavHostController,
+    viewModel: AddStoryViewModel = hiltViewModel()
+) {
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var inputText by remember { mutableStateOf("") }
+
+    val data = viewModel.responseUploadStory.collectAsState()
+
+    LaunchedEffect(Unit) {
+        navHostController.currentBackStackEntry?.savedStateHandle?.getLiveData<Uri?>("photoUri")?.observeForever { uri ->
+            selectedImageUri = uri
+        }
+    }
 
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         selectedImageUri = uri
     }
 
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(scrollState), // Enable scrolling
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Display selected image or placeholder
         if (selectedImageUri != null) {
             AsyncImage(
                 model = selectedImageUri,
@@ -50,13 +73,12 @@ fun AddStoryScreen(modifier: Modifier = Modifier) {
                 contentScale = ContentScale.Crop // Ensure the image is cropped correctly
             )
         } else {
-            // Placeholder image
             Image(
                 painter = painterResource(R.drawable.imagefolder),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.4f)
+                    .height(200.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
@@ -71,7 +93,7 @@ fun AddStoryScreen(modifier: Modifier = Modifier) {
             Button(
                 modifier = Modifier.fillMaxWidth(0.5f),
                 onClick = {
-
+                    navHostController.navigate(NavScreen.Camera.route)
                 }
             ) {
                 Text(text = "Camera")
@@ -97,11 +119,45 @@ fun AddStoryScreen(modifier: Modifier = Modifier) {
             onValueChange = { newText -> inputText = newText },
             label = { Text("Enter your story") },
             modifier = Modifier
-                .fillMaxWidth() // Fill full width
-                .height(250.dp) // Set TextField height
-                .padding(vertical = 8.dp), // Vertical padding
-            maxLines = 10, // Max lines
+                .fillMaxWidth()
+                .height(250.dp)
+                .padding(vertical = 8.dp),
+            maxLines = 10,
             placeholder = { Text("Start typing your story...") } // Placeholder
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Button untuk upload story
+        Button(
+            onClick = {
+                if(selectedImageUri != null && inputText.isNotBlank()) {
+                    viewModel.uploadStory(selectedImageUri!!, description = inputText, contentResolver = context.contentResolver)
+                } else{
+                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                }
+            }
+        ) {
+            Text(text = "Upload Story")
+        }
+
+        when (val result = data.value) {
+            is ResultState.Success -> {
+                Toast.makeText(context, "Story uploaded successfully", Toast.LENGTH_SHORT).show()
+                navHostController.previousBackStackEntry?.savedStateHandle?.set("refresh", true)
+                viewModel.resetState()
+                navHostController.popBackStack()
+            }
+            is ResultState.Error -> {
+                DialogError(onDismiss = {
+                    viewModel.resetState()
+                   navHostController.popBackStack()
+                }, message = result.exception)
+            }
+            is ResultState.Loading -> {
+                LoadingDialog()
+            }
+            else -> Unit
+        }
     }
 }

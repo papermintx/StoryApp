@@ -21,8 +21,8 @@ fun DialogError(
     onDismiss: () -> Unit,
     message: String,
 ) {
-    // Lottie animation state to control the animation playback
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error)) // Reference the Lottie animation file
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error))
 
     AnimatedVisibility(
         visible = true,
@@ -30,7 +30,10 @@ fun DialogError(
         exit = fadeOut(),
     ) {
         AlertDialog(
-            onDismissRequest = onDismiss,
+            onDismissRequest = {
+                onDismiss()
+            },
+
             title = {
                 Text("Error",
                     style = MyTypography.titleMedium,

@@ -16,7 +16,7 @@ import com.example.storyapp.presentation.home.components.StoryItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DicodingStory(modifier: Modifier = Modifier, listStory: List<Story>) {
+fun DicodingStory(modifier: Modifier = Modifier, listStory: List<Story>, onStoryClick: (String) -> Unit) {
 
     LazyColumn(
         modifier = modifier
@@ -26,7 +26,7 @@ fun DicodingStory(modifier: Modifier = Modifier, listStory: List<Story>) {
     ) {
         items(listStory.size) { index ->
             val data = listStory[index]
-            StoryItem(imageUrl = data.photoUrl, title = data.name, content = data.description)
+            StoryItem(imageUrl = data.photoUrl, title = data.name, content = data.description, onClick = onStoryClick, id = data.id)
         }
     }
 

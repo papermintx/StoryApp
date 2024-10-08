@@ -1,25 +1,18 @@
 package com.example.storyapp.presentation.home
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.example.storyapp.R
 import com.example.storyapp.domain.ResultState
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
@@ -28,59 +21,74 @@ import com.example.storyapp.presentation.navigation.NavScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel = hiltViewModel(), navController: NavHostController) {
-
+fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
+    navController: NavHostController
+) {
     val listStory = viewModel.listStory.collectAsState()
 
-    // Home Screen
+    LaunchedEffect(Unit) {
+        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh")?.observeForever {
+            viewModel.fetchStories()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Dicoding Story")
+                actions = {
+                          IconButton(onClick = {
+
+                                navController.navigate(NavScreen.Login.route) {
+                                    popUpTo(NavScreen.Home.route) {
+                                        inclusive = true
+                                    }
+                                }
+                              viewModel.resetState()
+                              viewModel.logout()
+                          }) {
+                              Icon(painter = painterResource(R.drawable.baseline_logout_24), contentDescription = null)
+                          }
                 },
-                modifier = modifier
-                    .height(75.dp)
+                title = { Text(text = "Dicoding Story") },
             )
         },
+
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
                     navController.navigate(NavScreen.AddStory.route)
                 },
-                containerColor = Color.Blue, // Warna FAB
-                contentColor = Color.White // Warna isi FAB
+                containerColor = Color.Blue,
+                contentColor = Color.White
             ) {
-                // Icon untuk FAB
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Story")
             }
         },
-        floatingActionButtonPosition = FabPosition.End, // Posisi FAB
-    ) {paddingValues ->
-
-        when(val list = listStory.value){
-            is ResultState.Success -> {
-                Column(
-                    modifier = modifier.padding(paddingValues = paddingValues)
-                        .padding(horizontal = 16.dp, vertical = 5.dp)
-                ) {
-                    DicodingStory(listStory = list.data)
-
+        floatingActionButtonPosition = FabPosition.End,
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when (val list = listStory.value) {
+                is ResultState.Success -> {
+                    DicodingStory(listStory = list.data) {
+                        navController.navigate(NavScreen.DetailStory.createRoute(it))
+                    }
+                }
+                is ResultState.Error -> {
+                    DialogError(
+                        onDismiss = {
+                            navController.navigate(NavScreen.Login.route) {
+                                popUpTo(NavScreen.Home.route) {
+                                    inclusive = true}
+                            }
+                            viewModel.logout()
+                        },
+                        message = list.exception
+                    )
+                } else -> {
+                    LoadingDialog()
                 }
             }
-            is ResultState.Error -> {
-                DialogError(onDismiss = {
-
-                }, message = list.exception)
-            }
-            is ResultState.Loading -> {
-                LoadingDialog()
-            }
-            else -> {
-                Text(text = "Something went wrong")
-            }
         }
-
-
     }
-
 }

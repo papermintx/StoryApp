@@ -23,7 +23,7 @@ class SplashViewModel @Inject constructor(
                 it.token
             }.collect { token ->
                 _token.value = token
-        }
+            }
         }
     }
 }
