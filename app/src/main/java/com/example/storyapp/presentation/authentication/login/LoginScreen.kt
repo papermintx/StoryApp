@@ -49,10 +49,41 @@ fun LoginScreen(
     val password = remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    val animationVisible = remember { Animatable(0f) }
+    val animationAlpha = remember { Animatable(0f) }
+    val animationOffsetX = remember { Animatable(0f) }
+
+    val emailAlpha = remember { Animatable(0f) }
+    val passwordAlpha = remember { Animatable(0f) }
+    val buttonAlpha = remember { Animatable(0f) }
+    val buttonAlpha2 = remember { Animatable(0f) }
+    val textAlpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        animationVisible.animateTo(1f, animationSpec = tween(durationMillis = 1090))
+        animationAlpha.animateTo(1f, animationSpec = tween(durationMillis = 700))
+
+        textAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+        emailAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200,delayMillis = 40))
+
+        passwordAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+        buttonAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+        buttonAlpha2.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            animationOffsetX.animateTo(
+                targetValue = 80f,
+                animationSpec = tween(durationMillis = 9000)
+            )
+            animationOffsetX.animateTo(
+                targetValue = -80f,
+                animationSpec = tween(durationMillis = 9000)
+            )
+        }
     }
 
     DisposableEffect(Unit) {
@@ -80,22 +111,28 @@ fun LoginScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(25.dp)
-            .graphicsLayer(alpha = animationVisible.value),
+           ,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(painter = painterResource(R.drawable.image_login), contentDescription = null)
+        Image(painter = painterResource(R.drawable.image_login), contentDescription = null, modifier = Modifier.graphicsLayer(
+            alpha = animationAlpha.value,
+            translationX = animationOffsetX.value
+        ))
         Text(
             text = "Ready to share your story?",
-            style = MyTypography.headlineSmall
+            style = MyTypography.headlineSmall,
+            modifier = Modifier.graphicsLayer(alpha = textAlpha.value)
         )
         Text(
             text = "Please enter your data first",
-            style = MyTypography.bodyLarge
+            style = MyTypography.bodyLarge,
+            modifier = Modifier.graphicsLayer(alpha = textAlpha.value)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Email", style = MyTypography.bodyMedium)
+        Text(text = "Email", style = MyTypography.bodyMedium, modifier = Modifier.graphicsLayer(alpha = emailAlpha.value)
+        )
         CustomTextField(
             label = "Email",
             text = email.value,
@@ -104,12 +141,13 @@ fun LoginScreen(
                 if (it.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(it).matches())
                     "Invalid email address."
                 else ""
-            }
+            },
+            modifier = Modifier.graphicsLayer(alpha = emailAlpha.value)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         // Input Password
-        Text(text = "Password", style = MyTypography.bodyMedium)
+        Text(text = "Password", style = MyTypography.bodyMedium, modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value))
         CustomTextField(
             label = "Password",
             text = password.value,
@@ -119,7 +157,8 @@ fun LoginScreen(
                 if (it.length < 8)
                     "Password must be at least 8 characters."
                 else ""
-            }
+            },
+            modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -137,7 +176,7 @@ fun LoginScreen(
                 }
 
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp) .graphicsLayer(alpha = buttonAlpha.value)
         ) {
             Text(text = "Sign In")
         }
@@ -149,7 +188,7 @@ fun LoginScreen(
             onClick = {
                 navController.navigate(NavScreen.Register.route)
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp)
+            modifier = Modifier.fillMaxWidth().height(50.dp) .graphicsLayer(alpha = buttonAlpha2.value)
         ) {
             Text(text = "Register")
         }

@@ -49,27 +49,59 @@ fun RegisterScreen(
     val password = remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    // Animasi fade-in untuk seluruh kolom UI
-    val animationVisible = remember { Animatable(0f) }
+    val animationAlpha = remember { Animatable(0f) }
+    val animationOffsetX = remember { Animatable(0f) }
+
+    val nameAlpha = remember { Animatable(0f) }
+    val emailAlpha = remember { Animatable(0f) }
+    val passwordAlpha = remember { Animatable(0f) }
+    val buttonAlpha = remember { Animatable(0f) }
+    val textAlpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        animationVisible.animateTo(1f, animationSpec = tween(durationMillis = 1090))
+        animationAlpha.animateTo(1f, animationSpec = tween(durationMillis = 700))
+
+        textAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+        nameAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200))
+
+        emailAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200,delayMillis = 40))
+
+        passwordAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+        buttonAlpha.animateTo(1f, animationSpec = tween(durationMillis = 200, delayMillis = 40))
+
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            animationOffsetX.animateTo(
+                targetValue = 80f,
+                animationSpec = tween(durationMillis = 9000)
+            )
+            animationOffsetX.animateTo(
+                targetValue = -80f,
+                animationSpec = tween(durationMillis = 9000)
+            )
+        }
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(25.dp)
-            .graphicsLayer(alpha = animationVisible.value), // Animasi fade-in untuk kolom
+            .padding(25.dp),
         verticalArrangement = Arrangement.Center
     ) {
 
-        Image(painter = painterResource(R.drawable.image_signup), contentDescription = null)
-        Text(text = "Please complete your personal data below", style = MyTypography.headlineSmall)
+        Image(painter = painterResource(R.drawable.image_signup), contentDescription = null,
+            modifier = Modifier
+                .graphicsLayer(translationX = animationOffsetX.value, alpha = animationAlpha.value)
+        )
+        Text(text = "Please complete your personal data below", style = MyTypography.headlineSmall, modifier = Modifier.graphicsLayer(alpha = textAlpha.value))
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Name", style = MyTypography.bodyMedium)
+        Text(text = "Name", style = MyTypography.bodyMedium, modifier = Modifier.graphicsLayer(alpha = nameAlpha.value))
         CustomTextField(
             label = "Name",
             text = name.value,
@@ -77,11 +109,12 @@ fun RegisterScreen(
             validate = {
                 if (it.isEmpty()) "Name cannot be empty."
                 else ""
-            }
+            },
+            modifier = Modifier.graphicsLayer(alpha = nameAlpha.value)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Email", style = MyTypography.bodyMedium)
+        Text(text = "Email", style = MyTypography.bodyMedium, modifier = Modifier.graphicsLayer(alpha = emailAlpha.value))
         CustomTextField(
             label = "Email",
             text = email.value,
@@ -90,11 +123,12 @@ fun RegisterScreen(
                 if (it.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(it).matches())
                     "Invalid email address."
                 else ""
-            }
+            },
+            modifier = Modifier.graphicsLayer(alpha = emailAlpha.value)
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Password", style = MyTypography.bodyMedium)
+        Text(text = "Password", style = MyTypography.bodyMedium, modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value))
         CustomTextField(
             label = "Password",
             text = password.value,
@@ -103,7 +137,8 @@ fun RegisterScreen(
             validate = {
                 if (it.length < 8) "Password must be at least 8 characters."
                 else ""
-            }
+            },
+            modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -124,6 +159,7 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)
+                .graphicsLayer(alpha = buttonAlpha.value)
         ) {
             Text(text = "Register")
         }

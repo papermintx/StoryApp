@@ -1,8 +1,8 @@
 package com.example.storyapp.presentation.camera
 
 import android.app.Activity
-import android.content.Intent
-import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
@@ -53,6 +53,15 @@ fun CameraScreen(
 
     val cameraViewModel : CameraViewModel = hiltViewModel()
 
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            navHostController.previousBackStackEntry?.savedStateHandle?.set("photoUri", it)
+            navHostController.popBackStack()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -79,19 +88,15 @@ fun CameraScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Tombol untuk membuka galeri
+            // Step 2: Button for opening the gallery
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(14.dp))
                     .size(45.dp)
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable {
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("content://media/internal/images/media")
-                        ).also {
-                            activity.startActivity(it)
-                        }
+                        // Launch the gallery picker
+                        galleryLauncher.launch("image/*")
                     },
                 contentAlignment = Alignment.Center
             ) {
