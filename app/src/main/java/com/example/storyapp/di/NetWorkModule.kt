@@ -23,7 +23,7 @@ object NetWorkModule {
     @Provides
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY // Atur level logging
+            level = HttpLoggingInterceptor.Level.BODY
         }
     }
 
