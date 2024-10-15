@@ -1,6 +1,7 @@
 package com.example.storyapp.presentation.camera
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -11,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,7 +37,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.storyapp.MainActivity
 import com.example.storyapp.R
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CameraScreen(
     activity: Activity,
@@ -51,6 +56,26 @@ fun CameraScreen(
         }
     }
 
+    val permissionsState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            android.Manifest.permission.CAMERA,
+        )
+    )
+
+    RequestPermission(
+        onPermissionGranted = { },
+        onPermissionDenied = {
+            navHostController.popBackStack()
+            Toast.makeText(activity, "Permission Denied", Toast.LENGTH_SHORT).show()
+            navHostController.popBackStack()
+        },
+        onPermissionsRevoked = {
+            Toast.makeText(activity, "Permission Revoked", Toast.LENGTH_SHORT).show()
+            navHostController.popBackStack()
+        },
+        permissionState = permissionsState
+    )
+
     val cameraViewModel : CameraViewModel = hiltViewModel()
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -61,6 +86,7 @@ fun CameraScreen(
             navHostController.popBackStack()
         }
     }
+
 
     Box(
         modifier = Modifier
@@ -78,7 +104,6 @@ fun CameraScreen(
                 }
             }
         )
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,16 +137,14 @@ fun CameraScreen(
                     .size(60.dp)
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable {
-                        if ((activity as MainActivity).arePermissionsGranted()) {
-                            cameraViewModel.onTakePhoto(controller = controller) { uri ->
-                                uri?.let {
-                                    navHostController.previousBackStackEntry?.savedStateHandle?.set(
-                                        "photoUri",
-                                        it
-                                    )
-                                }
-                                navHostController.popBackStack()
+                        cameraViewModel.onTakePhoto(controller = controller) { uri ->
+                            uri?.let {
+                                navHostController.previousBackStackEntry?.savedStateHandle?.set(
+                                    "photoUri",
+                                    it
+                                )
                             }
+                            navHostController.popBackStack()
                         }
                     },
                 contentAlignment = Alignment.Center

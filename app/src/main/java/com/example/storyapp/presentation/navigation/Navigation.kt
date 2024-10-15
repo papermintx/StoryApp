@@ -21,6 +21,7 @@ import com.example.storyapp.presentation.authentication.register.RegisterScreen
 import com.example.storyapp.presentation.camera.CameraScreen
 import com.example.storyapp.presentation.detail.DetailStoryScreen
 import com.example.storyapp.presentation.home.HomeScreen
+import com.example.storyapp.presentation.maps.MapStories
 import com.example.storyapp.presentation.splash.SplashScreen
 
 @Composable
@@ -114,6 +115,11 @@ fun Navigation(modifier: Modifier = Modifier, viewModel: NavigationViewModel = h
             }
         ) {
             CameraScreen(activity, navController)
+        }
+        composable(
+            NavScreen.MapsStories.route,
+        ) {
+            MapStories()
         }
 
     }

@@ -37,15 +37,19 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 actions = {
+                    IconButton(onClick = {
+                        navController.navigate(NavScreen.MapsStories.route)
+                    }) {
+                        Icon(painter = painterResource(R.drawable.baseline_map_24), contentDescription = null)
+                    }
                           IconButton(onClick = {
-
                                 navController.navigate(NavScreen.Login.route) {
                                     popUpTo(NavScreen.Home.route) {
                                         inclusive = true
                                     }
                                 }
-                              viewModel.resetState()
-                              viewModel.logout()
+                                viewModel.resetState()
+                                viewModel.logout()
                           }) {
                               Icon(painter = painterResource(R.drawable.baseline_logout_24), contentDescription = null)
                           }

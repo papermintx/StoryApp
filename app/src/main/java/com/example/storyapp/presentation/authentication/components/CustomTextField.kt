@@ -1,6 +1,8 @@
 package com.example.storyapp.presentation.authentication.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
@@ -57,7 +59,18 @@ fun CustomTextField(
                         )
                     }
                 }
-            }
+            },
+
+            // belum di tes
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    errorMessage = validate(text)
+                    isError = errorMessage.isNotEmpty()
+                }
+            ),
+
+            // belum di tes
+            keyboardOptions = KeyboardOptions.Default,
         )
         if (isError) {
             Text(

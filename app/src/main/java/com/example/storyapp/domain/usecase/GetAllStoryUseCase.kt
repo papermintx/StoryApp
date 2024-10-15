@@ -9,7 +9,7 @@ import javax.inject.Inject
 class GetAllStoryUseCase @Inject constructor(
     private val repository: RemoteDataRepository
 ) {
-    suspend operator fun invoke(token: String) : Flow<GetStoryResponseDto> = flow {
-        emit(repository.getAllStories(token))
+    suspend operator fun invoke(token: String, page: Int? = null, size: Int? = null, location: Int? = 0) : Flow<GetStoryResponseDto> = flow {
+        emit(repository.getAllStories(token, page, size, location))
     }
 }

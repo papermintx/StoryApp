@@ -1,5 +1,7 @@
 package com.example.storyapp.presentation.add.story
+import android.Manifest
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,11 +40,17 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.storyapp.R
 import com.example.storyapp.domain.ResultState
+import com.example.storyapp.presentation.camera.RequestPermission
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
 import com.example.storyapp.presentation.navigation.NavScreen
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.model.LatLng
 
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AddStoryScreen(
     modifier: Modifier = Modifier,
@@ -52,17 +60,47 @@ fun AddStoryScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var inputText by remember { mutableStateOf("") }
 
+    var location by remember{
+        mutableStateOf<LatLng?>(null)
+    }
+
     val data = viewModel.responseUploadStory.collectAsState()
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+
+    val permissionState = rememberMultiplePermissionsState(permissions = listOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    ))
+
+
+    RequestPermission(
+        onPermissionGranted = {
+            viewModel.requestLocationUpdates(context) { loc ->
+                loc?.let {
+                    location = LatLng(it.latitude, it.longitude)
+                    Toast.makeText(context, "Your location has been successfully obtained", Toast.LENGTH_SHORT).show()
+                } ?: run {
+                    Log.d("AddStoryScreen", "Location is null")
+                }
+            }
+        },
+        onPermissionDenied = {
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
+        },
+        onPermissionsRevoked = {
+            Toast.makeText(context, "Permission Revoked", Toast.LENGTH_SHORT).show()
+        },
+        permissionState = permissionState
+    )
+
 
     LaunchedEffect(Unit) {
         navHostController.currentBackStackEntry?.savedStateHandle?.getLiveData<Uri?>("photoUri")?.observeForever { uri ->
             selectedImageUri = uri
         }
-    }
-
-    val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        selectedImageUri = uri
     }
 
     val scrollState = rememberScrollState()
@@ -71,7 +109,7 @@ fun AddStoryScreen(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
-            .verticalScroll(scrollState), // Enable scrolling
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -146,13 +184,25 @@ fun AddStoryScreen(
         Button(
             onClick = {
                 if(selectedImageUri != null && inputText.isNotBlank()) {
-                    viewModel.uploadStory(selectedImageUri!!, description = inputText, contentResolver = context.contentResolver)
+                    viewModel.uploadStory(selectedImageUri!!, description = inputText, contentResolver = context.contentResolver, latLng = location)
                 } else{
                     Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 }
             }
         ) {
             Text(text = "Upload Story")
+        }
+
+        Button(onClick = {
+            viewModel.requestLocationUpdates(context) { loc ->
+                val latLng = loc?.let { LatLng(it.latitude, it.longitude) }
+                location = latLng
+
+                Log.d("AddStoryScreen", "Location: $location")
+                Toast.makeText(context, "Location: $location", Toast.LENGTH_SHORT).show()
+            }
+        }) {
+            Text(text = "Check My Location")
         }
 
         when (val result = data.value) {

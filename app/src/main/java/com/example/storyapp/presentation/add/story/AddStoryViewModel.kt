@@ -1,8 +1,15 @@
 package com.example.storyapp.presentation.add.story
 
+import android.Manifest
 import android.content.ContentResolver
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
 import android.util.Log
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.storyapp.data.dto.toAddStoryResult
@@ -11,6 +18,8 @@ import com.example.storyapp.domain.ResultState
 import com.example.storyapp.domain.model.AddStoryResult
 import com.example.storyapp.domain.usecase.UseCase
 import com.example.storyapp.utils.reduceFileImage
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,11 +38,32 @@ import javax.inject.Inject
 @HiltViewModel
 class AddStoryViewModel @Inject constructor(
     private val useCase: UseCase,
-    private val tokenPreferencesRepository: TokenPreferencesRepository
+    private val tokenPreferencesRepository: TokenPreferencesRepository,
 ) : ViewModel() {
 
     private val _responseUploadStory = MutableStateFlow<ResultState<AddStoryResult>>(ResultState.Idle)
     val responseUploadStory = _responseUploadStory.asStateFlow()
+
+    fun requestLocationUpdates(
+        context : Context,
+        locationCallback: (Location?) -> Unit
+    ) {
+        viewModelScope.launch {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                    locationCallback(location)
+                    Log.d("AddStoryViewModel", "requestLocationUpdates: $location")
+                }.addOnFailureListener {
+                    Log.e("AddStoryViewModel", "Failed to get location", it)
+                    locationCallback(null)
+                }
+            } else {
+                Log.e("AddStoryViewModel", "Permission denied")
+                locationCallback(null)
+            }
+        }
+    }
 
     private fun uriToFile(uri: Uri, contentResolver: ContentResolver): File? {
         val file = File.createTempFile("image_", ".jpg", null)
@@ -48,7 +78,7 @@ class AddStoryViewModel @Inject constructor(
         return file
     }
 
-    fun uploadStory(uri: Uri, description: String, lat: Float? = null, lon: Float? = null, contentResolver: ContentResolver) {
+    fun uploadStory(uri: Uri, description: String, latLng: LatLng?, contentResolver: ContentResolver) {
         Log.d("AddStoryViewModel", "uploadStory: $uri")
         viewModelScope.launch {
             _responseUploadStory.value = ResultState.Loading
@@ -79,8 +109,8 @@ class AddStoryViewModel @Inject constructor(
                             token = tokenBearer,
                             description = descriptionBody,
                             photo = body,
-                            lat = lat?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull()),
-                            lon = lon?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+                            lat = latLng?.latitude?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull()),
+                            lon = latLng?.longitude?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
                         )
                             .collect { response ->
                                 Log.d("AddStoryViewModel", "uploadStory collect: $response")
