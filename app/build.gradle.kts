@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
 }
@@ -85,7 +85,7 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Coil
     implementation(libs.coil.compose)
@@ -120,5 +120,13 @@ dependencies {
 
     implementation (libs.play.services.location)
 
+    // Room And Paging
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.paging)
+    implementation(libs.androidx.room.ktx)
+
+    implementation(libs.androidx.paging.compose)
+    implementation (libs.androidx.paging.runtime.ktx)
 
 }

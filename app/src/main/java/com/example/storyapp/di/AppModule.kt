@@ -1,9 +1,11 @@
 package com.example.storyapp.di
 
 import android.content.Context
+import com.example.storyapp.data.remote.StoryRemoteMediator
 import com.example.storyapp.datastore.TokenPreferencesRepository
 import com.example.storyapp.domain.usecase.AddStoryUseCase
 import com.example.storyapp.domain.usecase.GetAllStoryUseCase
+import com.example.storyapp.domain.usecase.GetAllStoryWithLocationUseCase
 import com.example.storyapp.domain.usecase.GetDetailStoryUseCase
 import com.example.storyapp.domain.usecase.LoginUseCase
 import com.example.storyapp.domain.usecase.RegisterUseCase
@@ -27,14 +29,16 @@ class AppModule {
         registerUseCase: RegisterUseCase,
         addStoryUseCase: AddStoryUseCase,
         getAllStoryUseCase: GetAllStoryUseCase,
-        getDetailStoryUseCase: GetDetailStoryUseCase
+        getDetailStoryUseCase: GetDetailStoryUseCase,
+        getAllStoryWithLocationUseCase: GetAllStoryWithLocationUseCase
     ): UseCase{
         return UseCase(
             loginUseCase,
             registerUseCase,
             addStoryUseCase,
             getAllStoryUseCase,
-            getDetailStoryUseCase
+            getDetailStoryUseCase,
+            getAllStoryWithLocationUseCase
         )
     }
 

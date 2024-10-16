@@ -1,7 +1,5 @@
 package com.example.storyapp.presentation.maps
 
-
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.storyapp.domain.model.Story
@@ -30,12 +27,11 @@ import kotlin.math.*
 
 @Composable
 fun MapScreen(
-    mapsViewModel: MapViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
+    mapsViewModel: MapViewModel = hiltViewModel(),
     mapType: MapType
 ) {
     val stories by mapsViewModel.listStoryWithLocation.collectAsState()
-    val context = LocalContext.current
 
     val cameraPosition = CameraPosition.fromLatLngZoom(LatLng(0.7893, 113.9213), 4f)
 
@@ -45,7 +41,6 @@ fun MapScreen(
     val clusteredStories = clusterMarkers(stories)
 
 
-    // State untuk menampilkan dialog
     var showDialog by remember { mutableStateOf(false) }
 
     var selectedCluster by remember { mutableStateOf<List<Story>?>(null) }
@@ -60,7 +55,6 @@ fun MapScreen(
         )
     ) {
         // Mengelompokkan marker
-
         clusteredStories.forEach { cluster ->
             if (cluster.size > 1) {
                 // Jika cluster memiliki lebih dari satu Story, tampilkan cluster marker dengan tanda lingkaran
@@ -113,15 +107,15 @@ fun MapScreen(
                     LazyColumn(modifier = Modifier.fillMaxWidth()) {
                         items(selectedCluster!!) { story ->
                             Column(modifier = Modifier.padding(8.dp)) {
-                                Text(text = "Pengirim: ${story.name}")
-                                Text(text = "Isi: ${story.description}")
+                                Text(text = "Sender: ${story.name}")
+                                Text(text = "Content: ${story.description}")
                             }
                         }
                     }
                 },
                 confirmButton = {
                     Button(onClick = { showDialog = false }) {
-                        Text("Tutup")
+                        Text("Close")
                     }
                 }
             )

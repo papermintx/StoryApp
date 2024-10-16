@@ -1,15 +1,24 @@
 package com.example.storyapp.data.repository
 
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSourceFactory
 import com.example.storyapp.data.ApiService
 import com.example.storyapp.data.dto.AddStoryResponseDto
 import com.example.storyapp.data.dto.GetDetailStoryResponseDto
 import com.example.storyapp.data.dto.GetStoryResponseDto
 import com.example.storyapp.data.dto.LoginResponseDto
 import com.example.storyapp.data.dto.RegisterResponseDto
+import com.example.storyapp.data.local.entity.StoryEntity
+import com.example.storyapp.data.local.room.StoryDatabase
+import com.example.storyapp.data.remote.StoryRemoteMediator
 import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.domain.model.RegisterRequest
 import com.example.storyapp.domain.repository.RemoteDataRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -20,7 +29,9 @@ import java.io.File
 import javax.inject.Inject
 
 class RemoteDataRepositoryImpl @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val storyDatabase: StoryDatabase,
+    private val remoteMediator: StoryRemoteMediator
 ): RemoteDataRepository {
 
     override suspend fun register(registerData: RegisterRequest): RegisterResponseDto {
@@ -34,8 +45,6 @@ class RemoteDataRepositoryImpl @Inject constructor(
             apiService.loginUser(loginData.email, loginData.password)
         }
     }
-
-
 
     override suspend fun addStory(
         token: String,
@@ -68,14 +77,21 @@ class RemoteDataRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAllStories(
-        token: String,
-        page: Int?,
-        size: Int?,
-        location: Int?
-    ): GetStoryResponseDto {
+    @OptIn(ExperimentalPagingApi::class)
+    override suspend fun getAllStories(): Flow<PagingData<StoryEntity>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 10,
+                enablePlaceholders = false
+            ),
+            remoteMediator = remoteMediator,
+            pagingSourceFactory = PagingSourceFactory { storyDatabase.storyDao().getAllStory() }
+        ).flow
+    }
+
+    override suspend fun getAllStoriesWithLocation(token: String): GetStoryResponseDto {
         return withContext(Dispatchers.Default){
-            apiService.getAllStories(token, page, size, location)
+            apiService.getAllStories(token, location = 1)
         }
     }
 

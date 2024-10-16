@@ -1,12 +1,15 @@
 package com.example.storyapp.domain.repository
 
+import androidx.paging.PagingData
 import com.example.storyapp.data.dto.AddStoryResponseDto
 import com.example.storyapp.data.dto.GetDetailStoryResponseDto
 import com.example.storyapp.data.dto.GetStoryResponseDto
 import com.example.storyapp.data.dto.LoginResponseDto
 import com.example.storyapp.data.dto.RegisterResponseDto
+import com.example.storyapp.data.local.entity.StoryEntity
 import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.domain.model.RegisterRequest
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -31,7 +34,9 @@ interface RemoteDataRepository {
     suspend fun addStoryGuest(description: String, photo: String, lat: String?, lon: String?): AddStoryResponseDto
 
     // Get all stories
-    suspend fun getAllStories(token: String, page: Int? = null, size: Int? = null, location: Int? = 0): GetStoryResponseDto
+    suspend fun getAllStories(): Flow<PagingData<StoryEntity>>
+
+    suspend fun getAllStoriesWithLocation(token: String): GetStoryResponseDto
 
     // Get a story by id
     suspend fun getStoryById(token: String, id: String): GetDetailStoryResponseDto

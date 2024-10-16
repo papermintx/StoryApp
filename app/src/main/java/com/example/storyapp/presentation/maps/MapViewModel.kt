@@ -75,7 +75,7 @@ class MapViewModel @Inject constructor(
     private suspend fun getAllStory(bearerToken: String) {
         Log.d("MapViewModel", "Get All Story")
 
-        useCase.getAllStoryUseCase(token = bearerToken, location = 1)
+        useCase.getAllStoryWithLocationUseCase(token = bearerToken)
             .onStart {
                 Log.d("Token bearer", bearerToken)
             }

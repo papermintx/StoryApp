@@ -1,6 +1,8 @@
 package com.example.storyapp.presentation.home
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -12,8 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.storyapp.R
-import com.example.storyapp.domain.ResultState
+import com.example.storyapp.data.local.entity.toStory
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
 import com.example.storyapp.presentation.home.components.DicodingStory
@@ -25,11 +29,11 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
-    val listStory = viewModel.listStory.collectAsState()
+    val listStory = viewModel.stories.collectAsLazyPagingItems()
 
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("refresh")?.observeForever {
-            viewModel.fetchStories()
+            // viewModel.fetchStories() // Uncomment if needed for refreshing stories
         }
     }
 
@@ -42,22 +46,19 @@ fun HomeScreen(
                     }) {
                         Icon(painter = painterResource(R.drawable.baseline_map_24), contentDescription = null)
                     }
-                          IconButton(onClick = {
-                                navController.navigate(NavScreen.Login.route) {
-                                    popUpTo(NavScreen.Home.route) {
-                                        inclusive = true
-                                    }
-                                }
-                                viewModel.resetState()
-                                viewModel.logout()
-                          }) {
-                              Icon(painter = painterResource(R.drawable.baseline_logout_24), contentDescription = null)
-                          }
+                    IconButton(onClick = {
+                        navController.navigate(NavScreen.Login.route) {
+                            popUpTo(NavScreen.Home.route) { inclusive = true }
+                        }
+                        viewModel.resetState()
+                        viewModel.logout()
+                    }) {
+                        Icon(painter = painterResource(R.drawable.baseline_logout_24), contentDescription = null)
+                    }
                 },
                 title = { Text(text = "Dicoding Story") },
             )
         },
-
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -72,25 +73,40 @@ fun HomeScreen(
         floatingActionButtonPosition = FabPosition.End,
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
-            when (val list = listStory.value) {
-                is ResultState.Success -> {
-                    DicodingStory(listStory = list.data) {
-                        navController.navigate(NavScreen.DetailStory.createRoute(it))
-                    }
+            when (listStory.loadState.refresh) {
+                is LoadState.Loading -> {
+                    LoadingDialog() // Show loading dialog while refreshing
                 }
-                is ResultState.Error -> {
+
+                is LoadState.Error -> {
+                    val error = listStory.loadState.refresh as LoadState.Error
                     DialogError(
                         onDismiss = {
                             navController.navigate(NavScreen.Login.route) {
-                                popUpTo(NavScreen.Home.route) {
-                                    inclusive = true}
+                                popUpTo(NavScreen.Home.route) { inclusive = true }
                             }
                             viewModel.logout()
                         },
-                        message = list.exception
+                        message = error.error.localizedMessage ?: "Unknown error"
                     )
-                } else -> {
-                    LoadingDialog()
+                }
+                else -> {
+                    // LazyColumn to display paged items
+                    LazyColumn {
+                        items(listStory.itemCount) { story ->
+
+                           val data = listStory.itemSnapshotList.map {
+                               it!!.toStory()
+                           }
+
+                            DicodingStory(
+                                listStory = data,
+                                onStoryClick = {
+                                    navController.navigate(NavScreen.DetailStory.route + "/$it")
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
