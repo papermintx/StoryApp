@@ -37,10 +37,5 @@ object DatabaseModule {
     fun provideRemoteKeysDao(storyDatabase: StoryDatabase): RemoteKeysDao =
         storyDatabase.remoteKeysDao()
 
-    @Provides
-    @Singleton
-    fun provideStoryRemoteMediator(storyDatabase: StoryDatabase, apiService: ApiService, tokenPreferencesRepository: TokenPreferencesRepository) : StoryRemoteMediator {
-        return StoryRemoteMediator(storyDatabase, apiService, tokenPreferencesRepository)
-    }
 
 }

@@ -1,6 +1,9 @@
 package com.example.storyapp.di
 
+import android.R.attr.level
 import com.example.storyapp.data.ApiService
+import com.example.storyapp.data.local.room.StoryDatabase
+import com.example.storyapp.data.remote.StoryRemoteMediator
 import com.example.storyapp.data.repository.RemoteDataRepositoryImpl
 import com.example.storyapp.domain.repository.RemoteDataRepository
 import com.example.storyapp.utils.Constants
@@ -57,7 +60,9 @@ object NetWorkModule {
     @Provides
     @Singleton
     fun provideRemoteDataRepository(apiService: ApiService): RemoteDataRepository {
-        return RemoteDataRepositoryImpl(apiService)
+        return RemoteDataRepositoryImpl(
+            apiService = apiService
+        )
     }
 
 }

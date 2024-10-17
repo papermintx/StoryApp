@@ -24,25 +24,3 @@ data class ListStoryItem(
 	@Json(name = "id") val id: String,
 	@Json(name = "lat") val lat: Double? // Nullable
 )
-
-fun ListStoryItem.toEntity() = StoryEntity(
-	photoUrl = photoUrl,
-	createdAt = createdAt,
-	name = name,
-	description = description,
-	lon = lon ?: 0.0,
-	id = id,
-	lat = lat ?: 0.0
-)
-
-
-
-fun ListStoryItem.toStory() = Story(
-	photoUrl = photoUrl,
-	createdAt = createdAt,
-	name = name,
-	description = description,
-	lon = lon,
-	id = id,
-	lat = lat
-)

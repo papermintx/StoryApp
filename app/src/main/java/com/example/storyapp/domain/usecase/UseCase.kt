@@ -6,5 +6,4 @@ data class UseCase (
     val addStoryUseCase: AddStoryUseCase,
     val getAllStoryUseCase: GetAllStoryUseCase,
     val getDetailStoryUseCase: GetDetailStoryUseCase,
-    val getAllStoryWithLocationUseCase: GetAllStoryWithLocationUseCase
 )

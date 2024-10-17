@@ -34,9 +34,12 @@ interface RemoteDataRepository {
     suspend fun addStoryGuest(description: String, photo: String, lat: String?, lon: String?): AddStoryResponseDto
 
     // Get all stories
-    suspend fun getAllStories(): Flow<PagingData<StoryEntity>>
-
-    suspend fun getAllStoriesWithLocation(token: String): GetStoryResponseDto
+    suspend fun getAllStories(
+        token: String,
+        page: Int? ,
+        size: Int? ,
+        location: Int? = 0
+    ): GetStoryResponseDto
 
     // Get a story by id
     suspend fun getStoryById(token: String, id: String): GetDetailStoryResponseDto

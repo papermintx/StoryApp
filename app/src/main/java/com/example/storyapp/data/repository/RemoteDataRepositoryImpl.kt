@@ -30,8 +30,6 @@ import javax.inject.Inject
 
 class RemoteDataRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-    private val storyDatabase: StoryDatabase,
-    private val remoteMediator: StoryRemoteMediator
 ): RemoteDataRepository {
 
     override suspend fun register(registerData: RegisterRequest): RegisterResponseDto {
@@ -78,20 +76,19 @@ class RemoteDataRepositoryImpl @Inject constructor(
     }
 
     @OptIn(ExperimentalPagingApi::class)
-    override suspend fun getAllStories(): Flow<PagingData<StoryEntity>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 10,
-                enablePlaceholders = false
-            ),
-            remoteMediator = remoteMediator,
-            pagingSourceFactory = PagingSourceFactory { storyDatabase.storyDao().getAllStory() }
-        ).flow
-    }
-
-    override suspend fun getAllStoriesWithLocation(token: String): GetStoryResponseDto {
+    override suspend fun getAllStories(
+        token: String,
+        page: Int?,
+        size: Int?,
+        location: Int?
+    ): GetStoryResponseDto {
         return withContext(Dispatchers.Default){
-            apiService.getAllStories(token, location = 1)
+            apiService.getAllStories(
+                token = token,
+                page = page,
+                size = size,
+                location = location
+            )
         }
     }
 

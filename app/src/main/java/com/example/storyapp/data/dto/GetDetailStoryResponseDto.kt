@@ -39,12 +39,3 @@ data class StoryDto(
 	val lat: Any?
 )
 
-fun StoryDto.toStory() = Story(
-	photoUrl = photoUrl,
-	createdAt = createdAt,
-	name = name,
-	description = description,
-	lon = lon as Double?,
-	id = id,
-	lat = lat as Double?
-)
