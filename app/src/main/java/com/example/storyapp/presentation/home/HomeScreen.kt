@@ -5,38 +5,62 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.storyapp.R
 import com.example.storyapp.presentation.home.components.DicodingStory
-import com.example.storyapp.presentation.navigation.NavScreen
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    navController: NavHostController
+    goDetailScreen: (String) -> Unit,
+    goMapsScreen: () -> Unit,
+    goLoginScreen: () -> Unit,
+    goAddStoryScreen: () -> Unit,
 ) {
     val stories = viewModel.storyPagingFlow.collectAsLazyPagingItems()
+    val showDialog = remember {
+        mutableStateOf(false)
+    }
+
+    if (showDialog.value){
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text("Confirm") },
+            text = { Text("Are you sure you want to logout?") },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog.value = false
+                    goLoginScreen()
+                    viewModel.resetState()
+                    viewModel.logout()
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog.value = false }) {
+                    Text("No")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 actions = {
-                    IconButton(onClick = {
-                        navController.navigate(NavScreen.MapsStories.route)
-                    }) {
+                    IconButton(onClick = goMapsScreen) {
                         Icon(painter = painterResource(R.drawable.baseline_map_24), contentDescription = null)
                     }
                     IconButton(onClick = {
-                        navController.navigate(NavScreen.Login.route) {
-                            popUpTo(NavScreen.Home.route) { inclusive = true }
-                        }
-//                        viewModel.resetState()
-//                        viewModel.logout()
+                        showDialog.value = true
                     }) {
                         Icon(painter = painterResource(R.drawable.baseline_logout_24), contentDescription = null)
                     }
@@ -46,9 +70,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    navController.navigate(NavScreen.AddStory.route)
-                },
+                onClick = goAddStoryScreen,
                 containerColor = Color.Blue,
                 contentColor = Color.White
             ) {
@@ -59,7 +81,8 @@ fun HomeScreen(
     ) { paddingValues ->
         DicodingStory(
             modifier = Modifier.padding(paddingValues),
-            stories = stories
+            stories = stories,
+            gotoDetail = goDetailScreen
         )
     }
 }

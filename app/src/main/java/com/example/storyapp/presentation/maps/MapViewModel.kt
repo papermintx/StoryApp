@@ -37,35 +37,14 @@ class MapViewModel @Inject constructor(
         }.firstOrNull()
         Log.d("MapViewModel", "Fetch Stories")
         tokenFlow?.let { token ->
-            getAllStory("Bearer $token")
+            getAllStoryWithLocation(token)
         }
         if (tokenFlow == null) {
             _listStoryWithLocation.value = emptyList()
         }
     }
 
-//    fun requestLocationUpdates(
-//        context : Context,
-//        locationCallback: (Location?) -> Unit
-//    ) {
-//        viewModelScope.launch {
-//            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-//                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-//                    locationCallback(location)
-//                    Log.d("AddStoryViewModel", "requestLocationUpdates: $location")
-//                }.addOnFailureListener {
-//                    Log.e("AddStoryViewModel", "Failed to get location", it)
-//                    locationCallback(null)
-//                }
-//            } else {
-//                Log.e("AddStoryViewModel", "Permission denied")
-//                locationCallback(null)
-//            }
-//        }
-//    }
-
-    private suspend fun getAllStory(bearerToken: String) {
+    private suspend fun getAllStoryWithLocation(bearerToken: String) {
         Log.d("MapViewModel", "Get All Story")
         val token = generateBearerToken(bearerToken)
 

@@ -20,7 +20,7 @@
         ) {
             viewModelScope.launch {
                 val uri = cameraRepository.takePhoto(controller)
-                onPhotoTaken(uri) // Memanggil callback dengan URI yang didapat
+                onPhotoTaken(uri)
             }
         }
     }

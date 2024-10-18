@@ -1,6 +1,7 @@
 package com.example.storyapp.presentation.camera
 
 import android.app.Activity
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,17 +25,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
-import com.example.storyapp.MainActivity
 import com.example.storyapp.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -44,8 +44,10 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @Composable
 fun CameraScreen(
     activity: Activity,
-    navHostController: NavHostController
+    goBack: () -> Unit,
+    currentBackstackEntry: (Uri) -> Unit,
 ) {
+
     val controller = remember {
         LifecycleCameraController(
             activity.applicationContext
@@ -56,25 +58,20 @@ fun CameraScreen(
         }
     }
 
-    val permissionsState = rememberMultiplePermissionsState(
+    // Menyimpan status izin untuk kamera
+    val cameraPermissionState = rememberMultiplePermissionsState(
         permissions = listOf(
-            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.CAMERA
         )
     )
 
-    RequestPermission(
-        onPermissionGranted = { },
-        onPermissionDenied = {
-            navHostController.popBackStack()
-            Toast.makeText(activity, "Permission Denied", Toast.LENGTH_SHORT).show()
-            navHostController.popBackStack()
-        },
-        onPermissionsRevoked = {
-            Toast.makeText(activity, "Permission Revoked", Toast.LENGTH_SHORT).show()
-            navHostController.popBackStack()
-        },
-        permissionState = permissionsState
-    )
+    // Meminta izin kamera saat komponen ditampilkan
+    LaunchedEffect(Unit) {
+        if (!cameraPermissionState.allPermissionsGranted) {
+            cameraPermissionState.launchMultiplePermissionRequest()
+        }
+    }
+
 
     val cameraViewModel : CameraViewModel = hiltViewModel()
 
@@ -82,8 +79,8 @@ fun CameraScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            navHostController.previousBackStackEntry?.savedStateHandle?.set("photoUri", it)
-            navHostController.popBackStack()
+            currentBackstackEntry(it)
+            goBack()
         }
     }
 
@@ -113,14 +110,12 @@ fun CameraScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            // Step 2: Button for opening the gallery
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(14.dp))
                     .size(45.dp)
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable {
-                        // Launch the gallery picker
                         galleryLauncher.launch("image/*")
                     },
                 contentAlignment = Alignment.Center
@@ -138,13 +133,11 @@ fun CameraScreen(
                     .background(MaterialTheme.colorScheme.primary)
                     .clickable {
                         cameraViewModel.onTakePhoto(controller = controller) { uri ->
-                            uri?.let {
-                                navHostController.previousBackStackEntry?.savedStateHandle?.set(
-                                    "photoUri",
-                                    it
-                                )
+                            uri?.let { data ->
+                                currentBackstackEntry(data)
+                                Toast.makeText(activity, data.toString(), Toast.LENGTH_SHORT).show()
                             }
-                            navHostController.popBackStack()
+                           goBack()
                         }
                     },
                 contentAlignment = Alignment.Center

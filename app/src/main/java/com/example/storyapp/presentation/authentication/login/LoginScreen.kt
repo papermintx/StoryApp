@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,8 +24,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,13 +41,16 @@ import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
 import com.example.storyapp.presentation.navigation.NavScreen
 import com.example.storyapp.utils.fonts.MyTypography
+import androidx.compose.ui.text.input.ImeAction
+
 
 @SuppressLint("RememberReturnType")
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: LoginViewModel = hiltViewModel(),
-    navController: NavHostController
+    goHomeScreen: () -> Unit,
+    goRegisterScreen: () -> Unit,
 ) {
     val loginState = viewModel.loginState.collectAsState()
     val email = remember { mutableStateOf("") }
@@ -57,6 +65,11 @@ fun LoginScreen(
     val buttonAlpha = remember { Animatable(0f) }
     val buttonAlpha2 = remember { Animatable(0f) }
     val textAlpha = remember { Animatable(0f) }
+
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
         animationAlpha.animateTo(1f, animationSpec = tween(durationMillis = 700))
@@ -99,10 +112,8 @@ fun LoginScreen(
         ResultState.Idle -> Unit
         ResultState.Loading -> LoadingDialog()
         is ResultState.Success -> {
-            navController.navigate(NavScreen.Home.route) {
-                popUpTo(NavScreen.Login.route) { inclusive = true }
-                viewModel.resetState()
-            }
+            goHomeScreen()
+            viewModel.resetState()
         }
     }
 
@@ -142,7 +153,15 @@ fun LoginScreen(
                     "Invalid email address."
                 else ""
             },
-            modifier = Modifier.graphicsLayer(alpha = emailAlpha.value)
+            modifier = Modifier.graphicsLayer(alpha = emailAlpha.value).focusRequester(emailFocusRequester),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    passwordFocusRequester.requestFocus()
+                }
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -158,7 +177,15 @@ fun LoginScreen(
                     "Password must be at least 8 characters."
                 else ""
             },
-            modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value)
+            modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value).focusRequester(passwordFocusRequester),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -185,9 +212,7 @@ fun LoginScreen(
 
         // Tombol Register
         Button(
-            onClick = {
-                navController.navigate(NavScreen.Register.route)
-            },
+            onClick = goRegisterScreen,
             modifier = Modifier.fillMaxWidth().height(50.dp) .graphicsLayer(alpha = buttonAlpha2.value)
         ) {
             Text(text = "Register")

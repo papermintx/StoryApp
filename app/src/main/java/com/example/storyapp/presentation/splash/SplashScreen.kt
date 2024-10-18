@@ -25,24 +25,19 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     modifier: Modifier = Modifier,
     viewModel: SplashViewModel = hiltViewModel(),
-    navHostController: NavHostController
+    goHomeScreen: () -> Unit,
+    goLoginScreen: () -> Unit,
 ) {
     val composition2 by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_splash))
     val context = LocalContext.current
     val token by viewModel.tokenNotNull.collectAsState()
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        delay(2000)
         if (token?.isNotEmpty() == true) {
-            navHostController.navigate(NavScreen.Home.route) {
-                popUpTo(NavScreen.Splash.route) { inclusive = true }
-                Toast.makeText(context, "Welcome Back", Toast.LENGTH_SHORT).show()
-            }
+            goHomeScreen()
         } else {
-            navHostController.navigate(NavScreen.Login.route) {
-                popUpTo(NavScreen.Splash.route) { inclusive = true }
-
-            }
+            goLoginScreen()
         }
     }
 

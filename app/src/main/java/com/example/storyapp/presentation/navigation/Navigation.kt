@@ -1,15 +1,21 @@
 package com.example.storyapp.presentation.navigation
 
 import android.app.Activity
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,12 +31,15 @@ import com.example.storyapp.presentation.maps.MapStories
 import com.example.storyapp.presentation.splash.SplashScreen
 
 @Composable
-fun Navigation(modifier: Modifier = Modifier, viewModel: NavigationViewModel = hiltViewModel(), activity: Activity
-) {
+fun Navigation(activity: Activity) {
+
+    val context = LocalContext.current
     val navController = rememberNavController()
 
-    LaunchedEffect(navController) {
-        viewModel.navController = navController
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        selectedImageUri = uri
     }
 
     NavHost(
@@ -40,45 +49,108 @@ fun Navigation(modifier: Modifier = Modifier, viewModel: NavigationViewModel = h
         composable(
             route = NavScreen.Home.route,
             enterTransition = {
-                slideInHorizontally(initialOffsetX = { 1000 }) + fadeIn()
+                slideInHorizontally(
+                    initialOffsetX = { 1000 },
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
             },
             exitTransition = {
-                slideOutHorizontally(targetOffsetX = { -1000 }) + fadeOut()
+                slideOutHorizontally(
+                    targetOffsetX = { -1000 },
+                    animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
             }
         ){
-            HomeScreen(navController = navController)
+            HomeScreen(
+                goDetailScreen = { id ->
+                    navController.navigate(NavScreen.DetailStory.createRoute(id))
+                },
+                goMapsScreen = {
+                    navController.navigate(NavScreen.MapsStories.route)
+                },
+                goLoginScreen = {
+                    navController.navigate(NavScreen.Login.route){
+                        popUpTo(NavScreen.Home.route){
+                            inclusive = true
+                        }
+                    }
+                },
+                goAddStoryScreen = {
+                    navController.navigate(NavScreen.AddStory.route)
+                }
+            )
         }
         composable(
             NavScreen.Login.route,
             enterTransition = {
-                slideInHorizontally(initialOffsetX = { -1000 }) + fadeIn()
+                slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
             },
             exitTransition = {
-                slideOutHorizontally(targetOffsetX = { 1000 }) + fadeOut()
+                slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
             }
         ){
-            LoginScreen(navController = navController)
+            LoginScreen(
+                goHomeScreen = {
+                    navController.navigate(NavScreen.Home.route){
+                        popUpTo(NavScreen.Login.route){
+                            inclusive = true
+                        }
+                    }
+                },
+                goRegisterScreen = {
+                    navController.navigate(NavScreen.Register.route)
+                }
+            )
         }
         composable(NavScreen.Register.route,
             enterTransition = {
-                slideInHorizontally(initialOffsetX = { 1000 }) + fadeIn()
+                slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
             },
             exitTransition = {
-                slideOutHorizontally(targetOffsetX = { -1000 }) + fadeOut()
+                slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
             }){
-            RegisterScreen(navController = navController)
+            RegisterScreen(
+                goBack = {
+                    navController.popBackStack()
+                }
+            )
         }
-        composable(
-            NavScreen.AddStory.route,
+        composable(NavScreen.AddStory.route,
             enterTransition = {
-                slideInHorizontally(initialOffsetX = { 1000 }) + fadeIn()
+                slideInHorizontally(initialOffsetX = { 1000 },animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
             },
             exitTransition = {
-                slideOutHorizontally(targetOffsetX = { -1000 }) + fadeOut()
+                slideOutHorizontally(targetOffsetX = { -1000 },animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
             }
         ) {
-            AddStoryScreen( navHostController = navController)
+            AddStoryScreen(
+                imageUri = selectedImageUri,
+                currentBackStack = {
+                    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Uri?>(NavArgument.PHOTOURI)?.observeForever { uri ->
+                        selectedImageUri = uri
+                    }
+                },
+                goCamera = {
+                    navController.navigate(NavScreen.Camera.route)
+                },
+                goGallery = {
+                    launcher.launch("image/*")
+                },
+                goBack = {
+                    navController.popBackStack()
+                },
+                backHandler = {
+                    selectedImageUri = null
+                }
+            )
         }
+
         composable(
             NavScreen.Splash.route,
             enterTransition = {
@@ -88,36 +160,75 @@ fun Navigation(modifier: Modifier = Modifier, viewModel: NavigationViewModel = h
                 fadeOut(animationSpec = tween(700))
             }
             ){
-            SplashScreen( navHostController = navController)
+            SplashScreen(
+                goLoginScreen = {
+                    navController.navigate(NavScreen.Login.route){
+                        popUpTo(NavScreen.Splash.route){
+                            inclusive = true
+                        }
+                    }
+                },
+                goHomeScreen = {
+                    navController.navigate(NavScreen.Home.route){
+                        popUpTo(NavScreen.Splash.route){
+                            inclusive = true
+                        }
+                    }
+                    Toast.makeText(context, "Welcome Back to StoryApp", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
         composable(
             NavScreen.DetailStory.route,
-            arguments = listOf(navArgument("id") { type = NavType.StringType }),
+            arguments = listOf(navArgument(NavArgument.STORYID) { type = NavType.StringType }),
             enterTransition = {
-                slideInHorizontally(initialOffsetX = { 1000 }) + fadeIn()
+                slideInHorizontally(initialOffsetX = { 1000 },animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
             },
             exitTransition = {
-                slideOutHorizontally(targetOffsetX = { -1000 }) + fadeOut()
+                slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
             }
         ) {backStackEntry ->
-            val id = backStackEntry.arguments?.getString("id")
+            val id = backStackEntry.arguments?.getString(NavArgument.STORYID)
             if (id != null) {
-                DetailStoryScreen(id = id, navHostController =  navController)
+                DetailStoryScreen(id = id, goBack = {
+                    navController.popBackStack()
+                })
             }
         }
         composable(
             NavScreen.Camera.route,
             enterTransition = {
-                slideInHorizontally(initialOffsetX = { 1000 }) + fadeIn()
+                slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
             },
             exitTransition = {
-                slideOutHorizontally(targetOffsetX = { -1000 }) + fadeOut()
+                slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
             }
         ) {
-            CameraScreen(activity, navController)
+            CameraScreen(
+                currentBackstackEntry = { uri ->
+                    navController.previousBackStackEntry?.savedStateHandle?.set(NavArgument.PHOTOURI, uri)
+
+                },
+                goBack = {
+                    navController.popBackStack()
+                },
+                activity = activity
+            )
         }
         composable(
             NavScreen.MapsStories.route,
+            enterTransition = {
+                slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeIn(animationSpec = tween(durationMillis = 500))
+            },
+            exitTransition = {
+                slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(durationMillis = 500)
+                ) + fadeOut(animationSpec = tween(durationMillis = 500))
+            }
         ) {
             MapStories()
         }

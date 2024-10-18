@@ -22,7 +22,9 @@ fun CustomTextField(
     text: String,
     onTextChange: (String) -> Unit,
     isPassword: Boolean = false,
-    validate: (String) -> String = { "" }
+    validate: (String) -> String ,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
@@ -61,16 +63,8 @@ fun CustomTextField(
                 }
             },
 
-            // belum di tes
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    errorMessage = validate(text)
-                    isError = errorMessage.isNotEmpty()
-                }
-            ),
-
-            // belum di tes
-            keyboardOptions = KeyboardOptions.Default,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
         )
         if (isError) {
             Text(

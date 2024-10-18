@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,9 +23,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -40,7 +46,7 @@ import com.example.storyapp.utils.fonts.MyTypography
 fun RegisterScreen(
     modifier: Modifier = Modifier,
     viewModel: RegisterViewModel = hiltViewModel(),
-    navController: NavHostController
+    goBack: () -> Unit,
 ) {
     val uiState = viewModel.registerState.collectAsState()
 
@@ -57,6 +63,12 @@ fun RegisterScreen(
     val passwordAlpha = remember { Animatable(0f) }
     val buttonAlpha = remember { Animatable(0f) }
     val textAlpha = remember { Animatable(0f) }
+
+    val nameFocusRequester = remember { FocusRequester() }
+    val emailFocusRequester = remember { FocusRequester() }
+    val passwordFocusRequester = remember { FocusRequester() }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
         animationAlpha.animateTo(1f, animationSpec = tween(durationMillis = 700))
@@ -110,7 +122,15 @@ fun RegisterScreen(
                 if (it.isEmpty()) "Name cannot be empty."
                 else ""
             },
-            modifier = Modifier.graphicsLayer(alpha = nameAlpha.value)
+            modifier = Modifier.graphicsLayer(alpha = nameAlpha.value).focusRequester(nameFocusRequester),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+               onNext = {
+                   emailFocusRequester.requestFocus()
+               }
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -124,7 +144,15 @@ fun RegisterScreen(
                     "Invalid email address."
                 else ""
             },
-            modifier = Modifier.graphicsLayer(alpha = emailAlpha.value)
+            modifier = Modifier.graphicsLayer(alpha = emailAlpha.value).focusRequester(emailFocusRequester),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    passwordFocusRequester.requestFocus()
+                }
+            )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -138,7 +166,15 @@ fun RegisterScreen(
                 if (it.length < 8) "Password must be at least 8 characters."
                 else ""
             },
-            modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value)
+            modifier = Modifier.graphicsLayer(alpha = passwordAlpha.value).focusRequester(passwordFocusRequester),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    keyboardController?.hide()
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -179,7 +215,7 @@ fun RegisterScreen(
         }
         is ResultState.Success -> {
             viewModel.resetState()
-            navController.popBackStack()
+            goBack
         }
         else -> Unit
     }
