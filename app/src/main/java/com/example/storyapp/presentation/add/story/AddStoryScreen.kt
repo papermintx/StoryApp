@@ -43,6 +43,7 @@ import com.example.storyapp.domain.ResultState
 import com.example.storyapp.presentation.camera.RequestPermission
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
+import com.example.storyapp.presentation.navigation.NavArgument
 import com.example.storyapp.presentation.navigation.NavScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -59,7 +60,8 @@ fun AddStoryScreen(
     goCamera:() -> Unit,
     goGallery:() -> Unit,
     goBack:() -> Unit,
-    backHandler:() -> Unit
+    backHandler:() -> Unit,
+    refreshBackStack:(Boolean) -> Unit
 ) {
     var inputText by remember { mutableStateOf("") }
 
@@ -78,7 +80,6 @@ fun AddStoryScreen(
         showDialog = true
     }
 
-
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -89,6 +90,7 @@ fun AddStoryScreen(
                     showDialog = false
                     goBack()
                     backHandler()
+                    location = null
                 }) {
                     Text("Yes")
                 }
@@ -125,7 +127,6 @@ fun AddStoryScreen(
 
     LaunchedEffect(Unit) {
         currentBackStack()
-        location = null
     }
 
     val scrollState = rememberScrollState()
@@ -217,7 +218,7 @@ fun AddStoryScreen(
         Button(
             onClick = {
                 if(imageUri != null && inputText.isNotBlank()) {
-                    viewModel.uploadStory(imageUri!!, description = inputText, contentResolver = context.contentResolver, latLng = location)
+                    viewModel.uploadStory(imageUri, description = inputText, contentResolver = context.contentResolver, latLng = location)
                 } else{
                     Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 }
@@ -231,12 +232,14 @@ fun AddStoryScreen(
             is ResultState.Success -> {
                 Toast.makeText(context, "Story uploaded successfully", Toast.LENGTH_SHORT).show()
                 viewModel.resetState()
-                goBack
+                refreshBackStack(true)
+                backHandler()
+                goBack()
             }
             is ResultState.Error -> {
                 DialogError(onDismiss = {
                     viewModel.resetState()
-                    goBack
+                    goBack()
                 }, message = result.exception)
             }
             is ResultState.Loading -> {

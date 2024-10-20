@@ -20,7 +20,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val useCase: UseCase,
-    private val tokenPreferencesRepository: TokenPreferencesRepository
 ): ViewModel() {
 
     private val _loginState = MutableStateFlow<ResultState<Boolean>>(ResultState.Idle)
@@ -62,7 +61,7 @@ class LoginViewModel @Inject constructor(
     private fun saveToken(token: String){
         viewModelScope.launch{
             Log.d("Proses Save Token", "Token: $token")
-            tokenPreferencesRepository.saveAuthToken(token)
+            useCase.saveUserTokenUseCase(token)
         }
     }
 

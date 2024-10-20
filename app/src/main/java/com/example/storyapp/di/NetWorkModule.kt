@@ -1,9 +1,10 @@
 package com.example.storyapp.di
 
-import android.R.attr.level
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.example.storyapp.data.ApiService
+import com.example.storyapp.data.AuthInterceptor
 import com.example.storyapp.data.local.room.StoryDatabase
-import com.example.storyapp.data.remote.StoryRemoteMediator
 import com.example.storyapp.data.repository.RemoteDataRepositoryImpl
 import com.example.storyapp.domain.repository.RemoteDataRepository
 import com.example.storyapp.utils.Constants
@@ -31,9 +32,15 @@ object NetWorkModule {
     }
 
     @Provides
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+    fun provideAuthInterceptor(dataStore: DataStore<Preferences>): AuthInterceptor {
+        return AuthInterceptor(dataStore)
+    }
+
+    @Provides
+    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor, authInterceptor: AuthInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor) // Menambahkan interceptor ke OkHttpClient
+            .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
             .build()
     }
 
@@ -59,9 +66,10 @@ object NetWorkModule {
     // Provides Repository instance
     @Provides
     @Singleton
-    fun provideRemoteDataRepository(apiService: ApiService): RemoteDataRepository {
+    fun provideRemoteDataRepository(apiService: ApiService, database: StoryDatabase): RemoteDataRepository {
         return RemoteDataRepositoryImpl(
-            apiService = apiService
+            apiService = apiService,
+            storyDatabase = database
         )
     }
 

@@ -4,7 +4,6 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSourceFactory
 import com.example.storyapp.data.ApiService
 import com.example.storyapp.data.dto.AddStoryResponseDto
 import com.example.storyapp.data.dto.GetDetailStoryResponseDto
@@ -30,6 +29,7 @@ import javax.inject.Inject
 
 class RemoteDataRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
+    private val storyDatabase: StoryDatabase
 ): RemoteDataRepository {
 
     override suspend fun register(registerData: RegisterRequest): RegisterResponseDto {
@@ -45,7 +45,6 @@ class RemoteDataRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addStory(
-        token: String,
         description: RequestBody,
         photo: MultipartBody.Part,
         lat: RequestBody?,
@@ -53,7 +52,7 @@ class RemoteDataRepositoryImpl @Inject constructor(
     ): AddStoryResponseDto {
 
         return withContext(Dispatchers.Default){
-            apiService.addStory(token,  description, photo, lat, lon)
+            apiService.addStory(description, photo, lat, lon)
         }
     }
 
@@ -77,14 +76,12 @@ class RemoteDataRepositoryImpl @Inject constructor(
 
     @OptIn(ExperimentalPagingApi::class)
     override suspend fun getAllStories(
-        token: String,
         page: Int?,
         size: Int?,
         location: Int?
     ): GetStoryResponseDto {
         return withContext(Dispatchers.Default){
             apiService.getAllStories(
-                token = token,
                 page = page,
                 size = size,
                 location = location
@@ -92,12 +89,27 @@ class RemoteDataRepositoryImpl @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalPagingApi::class)
+    override suspend fun getAllStoriesNew(): Pager<Int, StoryEntity> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 8,
+            ),
+            remoteMediator = StoryRemoteMediator(
+                database = storyDatabase,
+                apiService = apiService,
+            ),
+            pagingSourceFactory = {
+                storyDatabase.storyDao().getAllStory()
+            }
+        )
+    }
+
     override suspend fun getStoryById(
-        token: String,
         id: String
     ): GetDetailStoryResponseDto {
         return withContext(Dispatchers.Default){
-            apiService.getStoryDetail(token, id)
+            apiService.getStoryDetail(id)
         }
     }
 }

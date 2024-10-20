@@ -2,6 +2,7 @@ package com.example.storyapp.presentation.navigation
 
 import android.app.Activity
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,6 +34,10 @@ import com.example.storyapp.presentation.splash.SplashScreen
 @Composable
 fun Navigation(activity: Activity) {
 
+    val isRefresh = remember {
+        mutableStateOf(false)
+    }
+
     val context = LocalContext.current
     val navController = rememberNavController()
 
@@ -62,6 +67,7 @@ fun Navigation(activity: Activity) {
             }
         ){
             HomeScreen(
+                isRefresh = isRefresh.value,
                 goDetailScreen = { id ->
                     navController.navigate(NavScreen.DetailStory.createRoute(id))
                 },
@@ -77,6 +83,14 @@ fun Navigation(activity: Activity) {
                 },
                 goAddStoryScreen = {
                     navController.navigate(NavScreen.AddStory.route)
+                },
+                currentBackStack = {
+                    navController.currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>(NavArgument.REFRESH)?.observeForever { refresh ->
+                        isRefresh.value = refresh
+                    }
+                },
+                resetRefresh = {
+                    isRefresh.value = false
                 }
             )
         }
@@ -147,6 +161,9 @@ fun Navigation(activity: Activity) {
                 },
                 backHandler = {
                     selectedImageUri = null
+                },
+                refreshBackStack = { refresh ->
+                    navController.previousBackStackEntry?.savedStateHandle?.set(NavArgument.REFRESH, refresh)
                 }
             )
         }

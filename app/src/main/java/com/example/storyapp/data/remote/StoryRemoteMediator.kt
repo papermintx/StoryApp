@@ -11,15 +11,11 @@ import com.example.storyapp.data.local.entity.RemoteKeysEntity
 import com.example.storyapp.data.local.entity.StoryEntity
 import com.example.storyapp.data.local.room.StoryDatabase
 import com.example.storyapp.data.mapper.toEntity
-import com.example.storyapp.datastore.TokenPreferencesRepository
-import com.example.storyapp.utils.generateBearerToken
-import kotlinx.coroutines.flow.first
 
 @OptIn(ExperimentalPagingApi::class)
 class StoryRemoteMediator(
     private val database: StoryDatabase,
     private val apiService: ApiService,
-    private val tokenPreferences: TokenPreferencesRepository
 ): RemoteMediator<Int, StoryEntity>() {
 
     override suspend fun load(
@@ -49,30 +45,26 @@ class StoryRemoteMediator(
                 }
             }
 
-            val token = tokenPreferences.tokenPreferencesFlow.first().token
-            token?.let { tokenData ->
-                val response = apiService.getAllStories(token = generateBearerToken(tokenData), page = loadPage, size = state.config.pageSize)
-                val endOfPaginationReached = response.listStory.isEmpty()
-                val stories = response.listStory.map { story ->
-                    story.toEntity()
-                }
-
-                database.withTransaction {
-                    if (loadType == LoadType.REFRESH) {
-                        database.storyDao().deleteAllStory()
-                        database.remoteKeysDao().deleteRemoteKeys()
-                    }
-                    val prevKey = if (loadPage == 1) null else loadPage - 1
-                    val nextKey = if (endOfPaginationReached) null else loadPage + 1
-                    val keys = stories.map {
-                        RemoteKeysEntity(id = it.id, prevkey = prevKey, nextkey = nextKey)
-                    }
-                    database.remoteKeysDao().insertAll(keys)
-                    database.storyDao().insertStory(stories)
-                }
-                return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
+            val response = apiService.getAllStories( page = loadPage, size = state.config.pageSize)
+            val endOfPaginationReached = response.listStory.isEmpty()
+            val stories = response.listStory.map { story ->
+                story.toEntity()
             }
-            return MediatorResult.Error(Exception("Token is null"))
+
+            database.withTransaction {
+                if (loadType == LoadType.REFRESH) {
+                    database.storyDao().deleteAllStory()
+                    database.remoteKeysDao().deleteRemoteKeys()
+                }
+                val prevKey = if (loadPage == 1) null else loadPage - 1
+                val nextKey = if (endOfPaginationReached) null else loadPage + 1
+                val keys = stories.map {
+                    RemoteKeysEntity(id = it.id, prevkey = prevKey, nextkey = nextKey)
+                }
+                database.remoteKeysDao().insertAll(keys)
+                database.storyDao().insertStory(stories)
+            }
+            return MediatorResult.Success(endOfPaginationReached = endOfPaginationReached)
         } catch (e : Exception) {
             return MediatorResult.Error(e)
         }

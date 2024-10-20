@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,12 +20,22 @@ import com.example.storyapp.presentation.home.components.DicodingStory
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
+    isRefresh: Boolean = false,
     goDetailScreen: (String) -> Unit,
     goMapsScreen: () -> Unit,
     goLoginScreen: () -> Unit,
     goAddStoryScreen: () -> Unit,
+    currentBackStack: () -> Unit,
+    resetRefresh: () -> Unit,
 ) {
-    val stories = viewModel.storyPagingFlow.collectAsLazyPagingItems()
+
+    val storiesFlow = viewModel.stories.collectAsLazyPagingItems()
+
+
+    LaunchedEffect(Unit) {
+        currentBackStack()
+    }
+
     val showDialog = remember {
         mutableStateOf(false)
     }
@@ -38,7 +49,6 @@ fun HomeScreen(
                 Button(onClick = {
                     showDialog.value = false
                     goLoginScreen()
-                    viewModel.resetState()
                     viewModel.logout()
                 }) {
                     Text("Yes")
@@ -81,8 +91,10 @@ fun HomeScreen(
     ) { paddingValues ->
         DicodingStory(
             modifier = Modifier.padding(paddingValues),
-            stories = stories,
-            gotoDetail = goDetailScreen
+            stories = storiesFlow,
+            gotoDetail = goDetailScreen,
+            isRefresh = isRefresh,
+            resetRefresh = resetRefresh
         )
     }
 }

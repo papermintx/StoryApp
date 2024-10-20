@@ -1,5 +1,6 @@
 package com.example.storyapp.domain.repository
 
+import androidx.paging.Pager
 import androidx.paging.PagingData
 import com.example.storyapp.data.dto.AddStoryResponseDto
 import com.example.storyapp.data.dto.GetDetailStoryResponseDto
@@ -23,7 +24,6 @@ interface RemoteDataRepository {
 
     // Add a story
     suspend fun addStory(
-        token: String,
         description: RequestBody,
         photo: MultipartBody.Part,
         lat: RequestBody?,
@@ -35,12 +35,14 @@ interface RemoteDataRepository {
 
     // Get all stories
     suspend fun getAllStories(
-        token: String,
         page: Int? ,
         size: Int? ,
         location: Int? = 0
     ): GetStoryResponseDto
 
+    suspend fun getAllStoriesNew(
+    ): Pager<Int, StoryEntity>
+
     // Get a story by id
-    suspend fun getStoryById(token: String, id: String): GetDetailStoryResponseDto
+    suspend fun getStoryById(id: String): GetDetailStoryResponseDto
 }

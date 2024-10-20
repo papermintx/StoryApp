@@ -12,12 +12,11 @@ class AddStoryUseCase @Inject constructor(
     private val repository: RemoteDataRepository
 ){
     suspend operator fun invoke(
-        token: String,
         description: RequestBody,
         photo: MultipartBody.Part,
         lat: RequestBody?,
         lon: RequestBody?
     ): Flow<AddStoryResponseDto> = flow {
-        emit(repository.addStory(token, description, photo, lat, lon))
+        emit(repository.addStory(description, photo, lat, lon))
     }
 }

@@ -21,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MapViewModel @Inject constructor(
     private val useCase: UseCase,
-    private val tokenPreferencesRepository: TokenPreferencesRepository
 
 ) : ViewModel() {
     private val _listStoryWithLocation = MutableStateFlow<List<Story>>(emptyList())
@@ -32,23 +31,7 @@ class MapViewModel @Inject constructor(
     }
 
     private fun fetchStories() = viewModelScope.launch {
-        val tokenFlow = tokenPreferencesRepository.tokenPreferencesFlow.map {
-            it.token
-        }.firstOrNull()
-        Log.d("MapViewModel", "Fetch Stories")
-        tokenFlow?.let { token ->
-            getAllStoryWithLocation(token)
-        }
-        if (tokenFlow == null) {
-            _listStoryWithLocation.value = emptyList()
-        }
-    }
-
-    private suspend fun getAllStoryWithLocation(bearerToken: String) {
-        Log.d("MapViewModel", "Get All Story")
-        val token = generateBearerToken(bearerToken)
-
-        useCase.getAllStoryUseCase.invoke(token = token, location = 1)
+        useCase.getAllStoryUseCase.invoke(location = 1)
             .onStart {
                 Log.d("MapViewModel", "Start")
             }

@@ -1,21 +1,22 @@
 package com.example.storyapp.di
 
 import android.content.Context
-import androidx.paging.ExperimentalPagingApi
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingSourceFactory
-import com.example.storyapp.data.ApiService
-import com.example.storyapp.data.local.entity.StoryEntity
-import com.example.storyapp.data.local.room.StoryDatabase
-import com.example.storyapp.data.remote.StoryRemoteMediator
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.example.storyapp.datastore.TokenPreferencesRepository
+import com.example.storyapp.domain.GetAllStoryNewUseCase
+import com.example.storyapp.domain.LogoutUseCase
+import com.example.storyapp.domain.repository.RemoteDataRepository
 import com.example.storyapp.domain.usecase.AddStoryUseCase
+import com.example.storyapp.domain.usecase.GetAllStoryNewUseCaseImpl
 import com.example.storyapp.domain.usecase.GetAllStoryUseCase
 import com.example.storyapp.domain.usecase.GetDetailStoryUseCase
 import com.example.storyapp.domain.usecase.LoginUseCase
+import com.example.storyapp.domain.usecase.LogoutUseCaseImpl
 import com.example.storyapp.domain.usecase.RegisterUseCase
+import com.example.storyapp.domain.usecase.SaveUserTokenUseCase
 import com.example.storyapp.domain.usecase.UseCase
+import com.example.storyapp.utils.tokenDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,6 +37,7 @@ class AppModule {
         addStoryUseCase: AddStoryUseCase,
         getAllStoryUseCase: GetAllStoryUseCase,
         getDetailStoryUseCase: GetDetailStoryUseCase,
+        saveUserTokenUseCase: SaveUserTokenUseCase
     ): UseCase{
         return UseCase(
             loginUseCase,
@@ -43,35 +45,38 @@ class AppModule {
             addStoryUseCase,
             getAllStoryUseCase,
             getDetailStoryUseCase,
+            saveUserTokenUseCase
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideLogoutUseCase(
+        tokenPreferencesRepository: TokenPreferencesRepository
+    ): LogoutUseCase {
+        return LogoutUseCaseImpl(tokenPreferencesRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetAllStoryNewUseCase(
+        remoteDataRepository: RemoteDataRepository
+    ): GetAllStoryNewUseCase {
+        return GetAllStoryNewUseCaseImpl(remoteDataRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return context.tokenDataStore
     }
 
     @Singleton
     @Provides
     fun provideTokenPreferencesRepository(
-        @ApplicationContext context: Context
+        dataStore: DataStore<Preferences>
     ): TokenPreferencesRepository {
-        return TokenPreferencesRepository(context)
+        return TokenPreferencesRepository(dataStore)
     }
-
-    @OptIn(ExperimentalPagingApi::class)
-    @Provides
-    @Singleton
-    fun provideStoryPager(database: StoryDatabase, apiService: ApiService,  tokenPreferences: TokenPreferencesRepository): Pager<Int, StoryEntity>{
-        return Pager(
-            config = PagingConfig(
-                pageSize = 8
-            ),
-            remoteMediator = StoryRemoteMediator(
-                tokenPreferences = tokenPreferences,
-                database = database,
-                apiService = apiService
-            ),
-            pagingSourceFactory = PagingSourceFactory {
-                database.storyDao().getAllStory()
-            }
-        )
-    }
-
 
 }

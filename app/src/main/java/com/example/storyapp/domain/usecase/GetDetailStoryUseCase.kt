@@ -10,7 +10,7 @@ class GetDetailStoryUseCase @Inject constructor(
     private val repository: RemoteDataRepository
 ) {
 
-    suspend operator fun invoke(token: String, id: String) : Flow<GetDetailStoryResponseDto> = flow {
-        emit(repository.getStoryById(token, id))
+    suspend operator fun invoke(id: String) : Flow<GetDetailStoryResponseDto> = flow {
+        emit(repository.getStoryById(id))
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import com.example.storyapp.domain.model.Story
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -36,6 +38,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun DicodingStory(
     modifier: Modifier = Modifier, stories: LazyPagingItems<Story>,
+    isRefresh: Boolean,
+    resetRefresh: () -> Unit,
     gotoDetail: (String) -> Unit
 ) {
     val isRefreshing = remember { mutableStateOf(false) }
@@ -47,12 +51,11 @@ fun DicodingStory(
 
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
-    val onRefresh: () -> Unit = {
-        isRefreshing.value = true
-        coroutineScope.launch {
-            stories.refresh()
-            delay(2000)
-            isRefreshing.value = false
+
+    // Trigger refresh when isRefresh is true
+    LaunchedEffect(isRefresh) {
+        if (isRefresh) {
+            onRefresh(coroutineScope, stories, isRefreshing, resetRefresh)
         }
     }
 
@@ -75,7 +78,10 @@ fun DicodingStory(
             modifier = Modifier.fillMaxSize(),
             state = state,
             isRefreshing = isRefreshing.value,
-            onRefresh = onRefresh,
+            onRefresh = {
+                onRefresh(coroutineScope, stories, isRefreshing, resetRefresh)
+
+            },
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
@@ -122,5 +128,20 @@ fun DicodingStory(
                 }
             }
         }
+    }
+}
+
+private fun onRefresh(
+    coroutineScope: CoroutineScope,
+    stories: LazyPagingItems<Story>,
+    isRefreshing: MutableState<Boolean>,
+    resetRefresh: () -> Unit
+) {
+    isRefreshing.value = true
+    coroutineScope.launch {
+        stories.refresh()
+        delay(2000)
+        isRefreshing.value = false
+        resetRefresh()
     }
 }

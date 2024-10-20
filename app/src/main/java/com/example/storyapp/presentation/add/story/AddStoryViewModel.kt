@@ -38,7 +38,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AddStoryViewModel @Inject constructor(
     private val useCase: UseCase,
-    private val tokenPreferencesRepository: TokenPreferencesRepository,
 ) : ViewModel() {
 
     private val _responseUploadStory = MutableStateFlow<ResultState<AddStoryResult>>(ResultState.Idle)
@@ -83,48 +82,37 @@ class AddStoryViewModel @Inject constructor(
         viewModelScope.launch {
             _responseUploadStory.value = ResultState.Loading
             try {
-                val tokenPreferences = tokenPreferencesRepository.tokenPreferencesFlow.first()
-                val token = tokenPreferences.token
+                val file = uriToFile(uri, contentResolver)
+                if (file != null) {
+                    val compressedFile = file.reduceFileImage()
+                    Log.d("AddStoryViewModel", "uploadStory final compressed: ${compressedFile.length()} bytes")
 
-                if (!token.isNullOrEmpty()) {
-                    val file = uriToFile(uri, contentResolver)
-                    if (file != null) {
-                        val compressedFile = file.reduceFileImage()
-                        Log.d("AddStoryViewModel", "uploadStory final compressed: ${compressedFile.length()} bytes")
-
-                        if (compressedFile.length() > 1 * 1024 * 1024) {
-                            Log.e("AddStoryViewModel", "Compressed file size exceeds 1 MB")
-                            _responseUploadStory.value = ResultState.Error("Compressed file size exceeds 1 MB")
-                            return@launch
-                        }
-
-                        val requestFile = compressedFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                        val body = MultipartBody.Part.createFormData("photo", compressedFile.name, requestFile)
-                        val descriptionBody = description.toRequestBody("text/plain".toMediaTypeOrNull())
-
-                        val tokenBearer = "Bearer $token"
-                        Log.d("AddStoryViewModel", "uploadStory: $tokenBearer")
-
-                        useCase.addStoryUseCase(
-                            token = tokenBearer,
-                            description = descriptionBody,
-                            photo = body,
-                            lat = latLng?.latitude?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull()),
-                            lon = latLng?.longitude?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
-                        )
-                            .collect { response ->
-                                Log.d("AddStoryViewModel", "uploadStory collect: $response")
-                                if (response.error) {
-                                    _responseUploadStory.value = ResultState.Error(response.message)
-                                } else {
-                                    val data = response.toAddStoryResult()
-                                    _responseUploadStory.value = ResultState.Success(data)
-                                }
-                            }
+                    if (compressedFile.length() > 1 * 1024 * 1024) {
+                        Log.e("AddStoryViewModel", "Compressed file size exceeds 1 MB")
+                        _responseUploadStory.value = ResultState.Error("Compressed file size exceeds 1 MB")
+                        return@launch
                     }
-                } else {
-                    Log.e("AddStoryViewModel", "Token is null or empty")
-                    _responseUploadStory.value = ResultState.Error("Token is null or empty")
+
+                    val requestFile = compressedFile.asRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val body = MultipartBody.Part.createFormData("photo", compressedFile.name, requestFile)
+                    val descriptionBody = description.toRequestBody("text/plain".toMediaTypeOrNull())
+
+
+                    useCase.addStoryUseCase(
+                        description = descriptionBody,
+                        photo = body,
+                        lat = latLng?.latitude?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull()),
+                        lon = latLng?.longitude?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+                    )
+                        .collect { response ->
+                            Log.d("AddStoryViewModel", "uploadStory collect: $response")
+                            if (response.error) {
+                                _responseUploadStory.value = ResultState.Error(response.message)
+                            } else {
+                                val data = response.toAddStoryResult()
+                                _responseUploadStory.value = ResultState.Success(data)
+                            }
+                        }
                 }
             } catch (e: HttpException) {
                 Log.e("AddStoryViewModel", e.message())
