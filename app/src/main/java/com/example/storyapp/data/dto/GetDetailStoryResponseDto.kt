@@ -1,6 +1,5 @@
 package com.example.storyapp.data.dto
 
-import com.example.storyapp.domain.model.Story
 import com.squareup.moshi.Json
 
 data class GetDetailStoryResponseDto(

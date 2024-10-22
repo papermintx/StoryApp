@@ -13,12 +13,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.storyapp.R
-import com.example.storyapp.presentation.navigation.NavScreen
 import kotlinx.coroutines.delay
 
 @Composable
@@ -29,7 +27,6 @@ fun SplashScreen(
     goLoginScreen: () -> Unit,
 ) {
     val composition2 by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.loading_splash))
-    val context = LocalContext.current
     val token by viewModel.tokenNotNull.collectAsState()
 
     LaunchedEffect(Unit) {

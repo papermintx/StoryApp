@@ -1,7 +1,6 @@
 package com.example.storyapp.presentation.add.story
 import android.Manifest
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -40,11 +39,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.storyapp.R
 import com.example.storyapp.domain.ResultState
-import com.example.storyapp.presentation.camera.RequestPermission
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
-import com.example.storyapp.presentation.navigation.NavArgument
-import com.example.storyapp.presentation.navigation.NavScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.maps.model.LatLng

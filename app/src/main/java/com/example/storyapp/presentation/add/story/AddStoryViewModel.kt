@@ -8,12 +8,9 @@ import android.location.Location
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.storyapp.data.dto.toAddStoryResult
-import com.example.storyapp.datastore.TokenPreferencesRepository
 import com.example.storyapp.domain.ResultState
 import com.example.storyapp.domain.model.AddStoryResult
 import com.example.storyapp.domain.usecase.UseCase
@@ -23,7 +20,6 @@ import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

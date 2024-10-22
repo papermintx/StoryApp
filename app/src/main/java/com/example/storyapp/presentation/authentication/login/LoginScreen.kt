@@ -32,14 +32,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.example.storyapp.R
 import com.example.storyapp.domain.ResultState
 import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.presentation.authentication.components.CustomTextField
 import com.example.storyapp.presentation.components.DialogError
 import com.example.storyapp.presentation.components.LoadingDialog
-import com.example.storyapp.presentation.navigation.NavScreen
 import com.example.storyapp.utils.fonts.MyTypography
 import androidx.compose.ui.text.input.ImeAction
 

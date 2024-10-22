@@ -15,16 +15,6 @@ fun StoryDto.toStory() = Story(
     lat = lat as Double?
 )
 
-fun StoryDto.toStoryEntity() = StoryEntity(
-    photoUrl = photoUrl,
-    createdAt = createdAt,
-    name = name,
-    description = description,
-    lon = lon as Double?,
-    id = id,
-    lat = lat as Double?
-)
-
 
 fun StoryEntity.toStory() = Story(
     id = id,

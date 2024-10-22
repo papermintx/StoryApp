@@ -51,7 +51,7 @@ class CameraRepositoryImpl @Inject constructor(
                                 val uri = savePhoto(imageBitmap)
 
                                 if (uri != null) {
-                                    continuation.resume(uri) // Jika berhasil, lanjutkan dengan URI
+                                    continuation.resume(uri)
                                 } else {
                                     continuation.resumeWithException(Exception("Failed to save photo"))
                                 }
@@ -59,7 +59,7 @@ class CameraRepositoryImpl @Inject constructor(
                             } catch (e: Exception) {
                                 continuation.resumeWithException(e)
                             } finally {
-                                image.close() // Pastikan image ditutup
+                                image.close()
                             }
                         }
                     }
@@ -77,15 +77,11 @@ class CameraRepositoryImpl @Inject constructor(
         return withContext(Dispatchers.IO) {
             val resolver: ContentResolver = application.contentResolver
 
-            // Tentukan lokasi koleksi gambar
             val imageCollection = MediaStore.Images.Media.getContentUri(
                 MediaStore.VOLUME_EXTERNAL_PRIMARY
             )
-
             val appName = application.getString(R.string.app_name)
             val timeInMillis = System.currentTimeMillis()
-
-            // Siapkan ContentValues untuk metadata gambar
             val imageContentValues: ContentValues = ContentValues().apply {
                 put(
                     MediaStore.Images.Media.DISPLAY_NAME,
@@ -99,28 +95,21 @@ class CameraRepositoryImpl @Inject constructor(
                 put(MediaStore.MediaColumns.DATE_TAKEN, timeInMillis)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
-
-            // Sisipkan gambar ke MediaStore
             val imageMediaStoreUri: Uri? = resolver.insert(
                 imageCollection, imageContentValues
             )
 
-            // Jika URI berhasil dibuat, simpan gambar
             imageMediaStoreUri?.let { uri ->
                 try {
                     resolver.openOutputStream(uri)?.use { outputStream ->
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                     }
-
-                    // Setelah gambar selesai disimpan, perbarui status gambar
                     imageContentValues.clear()
                     imageContentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
                     resolver.update(uri, imageContentValues, null, null)
-
-                    uri // Kembalikan URI dari gambar yang disimpan
+                    uri
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // Jika terjadi error, hapus entri di MediaStore
                     resolver.delete(uri, null, null)
                     null
                 }

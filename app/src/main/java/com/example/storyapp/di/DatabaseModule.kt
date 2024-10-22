@@ -2,12 +2,9 @@ package com.example.storyapp.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.storyapp.data.ApiService
 import com.example.storyapp.data.local.room.RemoteKeysDao
 import com.example.storyapp.data.local.room.StoryDao
 import com.example.storyapp.data.local.room.StoryDatabase
-import com.example.storyapp.data.remote.StoryRemoteMediator
-import com.example.storyapp.datastore.TokenPreferencesRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

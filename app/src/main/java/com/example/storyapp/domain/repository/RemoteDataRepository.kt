@@ -1,7 +1,6 @@
 package com.example.storyapp.domain.repository
 
 import androidx.paging.Pager
-import androidx.paging.PagingData
 import com.example.storyapp.data.dto.AddStoryResponseDto
 import com.example.storyapp.data.dto.GetDetailStoryResponseDto
 import com.example.storyapp.data.dto.GetStoryResponseDto
@@ -10,7 +9,6 @@ import com.example.storyapp.data.dto.RegisterResponseDto
 import com.example.storyapp.data.local.entity.StoryEntity
 import com.example.storyapp.domain.model.LoginRequest
 import com.example.storyapp.domain.model.RegisterRequest
-import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 

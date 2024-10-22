@@ -140,30 +140,14 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.mockito.inline)
 
-    val mockkVersion = "1.13.13"
-    testImplementation("io.mockk:mockk:${mockkVersion}")
-    testImplementation(libs.robolectric)
-
-    // JUnit 5
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
-    // Jika Anda menggunakan Paging
     testImplementation (libs.androidx.paging.common.ktx)
-
 
     testImplementation(libs.androidx.core.testing)
     testImplementation (libs.turbine)
 
-
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation (libs.assertj.core) // Pastikan untuk menggunakan versi terbaru
-
-
-//    testImplementation(libs.hilt.android.testing)
-//    kspTest(libs.hilt.android.compiler)
-//
-//    androidTestImplementation(libs.hilt.android.testing)
-//    kspAndroidTest(libs.hilt.android.compiler)
-
+    testImplementation (libs.assertj.core)
 
 }

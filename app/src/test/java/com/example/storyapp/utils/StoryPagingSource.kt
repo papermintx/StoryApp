@@ -6,7 +6,6 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadResult
 import androidx.paging.PagingState
-import androidx.recyclerview.widget.DiffUtil
 import com.example.storyapp.domain.model.Story
 
 class StoryPagingSource : PagingSource<Int, LiveData<List<Story>>>() {
